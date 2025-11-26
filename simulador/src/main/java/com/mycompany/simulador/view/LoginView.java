@@ -12,58 +12,185 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.GaussianBlur;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 
 public class LoginView {
 
     private final StackPane root = new StackPane();
     private final TextField txtCedula = new TextField();
     private final PasswordField txtContrasena = new PasswordField();
-    private final Button btnIngresar = new Button();
-    private final Button btnVolver   = new Button();
+    private final Button btnIngresar = new Button("Listo");
+    private final Button btnVolver   = new Button("Retroceder");
+
+    private static final double ANCHO_COLUMNAS = 260;
 
     public LoginView() {
-        txtCedula.setPromptText("Cédula");
-        txtContrasena.setPromptText("Contraseña");
 
-        VBox form = new VBox(10,
-                new Label("Cédula:"), txtCedula,
-                new Label("Contraseña:"), txtContrasena);
-        form.setMaxWidth(300);
-        form.setAlignment(Pos.CENTER_LEFT);
-        form.setPadding(new Insets(10));
+        // ============================================================
+        // 1. Fondo responsive
+        // ============================================================
+        ImageView background = IconosUtils.crearImageViewFondo(
+                RutasArchivos.LOGIN_BACKGROUND, root
+        );
 
-        IconosUtils.configurarBotonConHover(btnIngresar,
-                RutasArchivos.LOGIN_BTN_LISTO,
-                RutasArchivos.LOGIN_BTN_LISTO);
-        IconosUtils.configurarBotonConHover(btnVolver,
-                RutasArchivos.LOGIN_BTN_RETROCEDER,
-                RutasArchivos.LOGIN_BTN_RETROCEDER);
+        // ============================================================
+        // 2. Caja Glassy Neomorphism centrada
+        // ============================================================
+        VBox glassBox = new VBox(25);
+        glassBox.setPadding(new Insets(35));
+        glassBox.setAlignment(Pos.CENTER);
+        glassBox.setMaxWidth(420);
 
-        VBox botones = new VBox(10, btnIngresar, btnVolver);
+        Rectangle glassBg = new Rectangle();
+        glassBg.widthProperty().bind(glassBox.widthProperty());
+        glassBg.heightProperty().bind(glassBox.heightProperty());
+        glassBg.setArcWidth(35);
+        glassBg.setArcHeight(35);
+        glassBg.setFill(Color.web("#ffffff22"));
+        glassBg.setStroke(Color.web("#ffffff55"));
+        glassBg.setStrokeWidth(1.2);
+        glassBg.setEffect(new GaussianBlur(22));
+
+        DropShadow shadow = new DropShadow(18, Color.rgb(0,0,0,0.35));
+        shadow.setOffsetY(10);
+        glassBox.setEffect(shadow);
+
+
+        // ============================================================
+        // 3. Campos y labels ALINEADOS a la perfección
+        // ============================================================
+        estiloCampo(txtCedula);
+        estiloCampo(txtContrasena);
+
+        Label lblCed = crearLabel("Cédula");
+        Label lblCon = crearLabel("Contraseña");
+
+        lblCed.setMaxWidth(ANCHO_COLUMNAS);
+        lblCon.setMaxWidth(ANCHO_COLUMNAS);
+        lblCed.setAlignment(Pos.CENTER);
+        lblCon.setAlignment(Pos.CENTER);
+
+        txtCedula.setMaxWidth(ANCHO_COLUMNAS);
+        txtContrasena.setMaxWidth(ANCHO_COLUMNAS);
+
+        VBox form = new VBox(18);
+        form.setAlignment(Pos.CENTER);
+        form.getChildren().addAll(
+            lblCed,
+            txtCedula,
+            lblCon,
+            txtContrasena
+        );
+
+
+        // ============================================================
+        // 4. Botones alineados horizontalmente y MISMO ancho vertical
+        // ============================================================
+        estiloBoton(btnIngresar);
+        estiloBoton(btnVolver);
+
+        btnIngresar.setMinWidth(120);
+        btnVolver.setMinWidth(120);
+
+        HBox botones = new HBox(20, btnIngresar, btnVolver);
         botones.setAlignment(Pos.CENTER);
 
-        VBox layout = new VBox(20, form, botones);
-        layout.setAlignment(Pos.CENTER);
 
-        ImageView background = IconosUtils.crearImageViewFondo(
-                RutasArchivos.LOGIN_BACKGROUND, root);
+        // ============================================================
+        // 5. Ensamblado final
+        // ============================================================
+        glassBox.getChildren().addAll(form, botones);
 
-        root.getChildren().addAll(background, layout);
+        StackPane wrapper = new StackPane(glassBg, glassBox);
+        wrapper.setAlignment(Pos.CENTER);
+
+        root.getChildren().addAll(background, wrapper);
     }
 
-    public Parent getRoot() {
-        return root;
+
+    // ============================================================
+    // Estilizado perfecto de los TEXTFIELDS
+    // ============================================================
+    private void estiloCampo(TextField campo) {
+        campo.setStyle("""
+            -fx-background-color: rgba(255,255,255,0.28);
+            -fx-background-radius: 12;
+            -fx-border-radius: 12;
+            -fx-border-color: rgba(255,255,255,0.6);
+            -fx-border-width: 1.2;
+            -fx-padding: 10 14;
+            -fx-font-size: 16px;
+            -fx-text-fill: white;
+            -fx-prompt-text-fill: rgba(255,255,255,0.75);
+        """);
+
+        campo.setEffect(new DropShadow(10, Color.rgb(0,0,0,0.35)));
     }
+
+
+    // ============================================================
+    // Botones glassy con hover elegante sin cuadro feo
+    // ============================================================
+    private void estiloBoton(Button btn) {
+        btn.setStyle("""
+            -fx-background-color: rgba(255,255,255,0.22);
+            -fx-background-radius: 20;
+            -fx-border-radius: 20;
+            -fx-border-color: rgba(255,255,255,0.55);
+            -fx-border-width: 1.2;
+            -fx-padding: 8 20;
+            -fx-text-fill: white;
+            -fx-font-size: 16px;
+            -fx-font-weight: bold;
+        """);
+
+        btn.setEffect(new DropShadow(12, Color.rgb(0,0,0,0.35)));
+
+        btn.setOnMouseEntered(e -> btn.setStyle("""
+            -fx-background-color: rgba(255,255,255,0.38);
+            -fx-background-radius: 20;
+            -fx-border-radius: 20;
+            -fx-border-color: rgba(255,255,255,0.75);
+            -fx-border-width: 1.2;
+            -fx-padding: 8 20;
+            -fx-text-fill: black;
+            -fx-font-size: 16px;
+            -fx-font-weight: bold;
+        """));
+
+        btn.setOnMouseExited(e -> estiloBoton(btn));
+    }
+
+
+    // ============================================================
+    // Labels grandes y centrados
+    // ============================================================
+    private Label crearLabel(String texto) {
+        Label lbl = new Label(texto);
+        lbl.setTextFill(Color.WHITE);
+        lbl.setStyle("""
+            -fx-font-size: 18px;
+            -fx-font-weight: bold;
+        """);
+        return lbl;
+    }
+
+
+    // ============================================================
+    // Controladores
+    // ============================================================
+    public Parent getRoot() { return root; }
 
     public int getCedula() {
-        try {
-            return Integer.parseInt(txtCedula.getText().trim());
-        } catch (NumberFormatException e) {
-            return -1;
-        }
+        try { return Integer.parseInt(txtCedula.getText().trim()); }
+        catch (Exception e) { return -1; }
     }
 
     public String getContrasena() {
@@ -75,7 +202,6 @@ public class LoginView {
 
     public void mostrarError(String msg) {
         Alert a = new Alert(Alert.AlertType.ERROR, msg, ButtonType.OK);
-        a.setHeaderText("Error");
         a.showAndWait();
     }
 

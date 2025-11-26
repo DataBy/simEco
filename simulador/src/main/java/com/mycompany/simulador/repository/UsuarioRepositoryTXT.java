@@ -1,5 +1,6 @@
 package com.mycompany.simulador.repository;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,20 @@ public class UsuarioRepositoryTXT implements IUsuariosRepository {
 
     private final Path path = AppConfig.ARCHIVO_USUARIOS;
 
+    // ✔ ÚNICO CAMBIO necesario
+    public UsuarioRepositoryTXT() {
+        try {
+            AppConfig.ensureDataFolder(); // crea /data si no existe
+
+            if (!Files.exists(path)) {
+                Files.createFile(path); // crea usuarios.txt si falta
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error inicializando archivo de usuarios: " + path, e);
+        }
+    }
+
     @Override
     public void guardar(Usuario usuario) {
         String linea = String.join(";",
@@ -24,14 +39,17 @@ public class UsuarioRepositoryTXT implements IUsuariosRepository {
                 usuario.getGenero(),
                 usuario.getCorreo(),
                 usuario.getContrasenaHash());
+
         List<String> lineas = new ArrayList<>();
         lineas.add(linea);
+
         ArchivoUtils.escribirLineas(path, lineas, true);
     }
 
     @Override
     public Usuario buscarPorCedula(int cedula) {
         List<String> lineas = ArchivoUtils.leerLineas(path);
+
         for (String l : lineas) {
             String[] p = l.split(";");
             if (p.length == 6 && Integer.parseInt(p[0]) == cedula) {
@@ -52,6 +70,7 @@ public class UsuarioRepositoryTXT implements IUsuariosRepository {
     public List<Usuario> listarTodos() {
         List<Usuario> lista = new ArrayList<>();
         List<String> lineas = ArchivoUtils.leerLineas(path);
+
         for (String l : lineas) {
             try {
                 String[] p = l.split(";");
