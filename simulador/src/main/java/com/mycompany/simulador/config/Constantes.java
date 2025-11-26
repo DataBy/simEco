@@ -5,7 +5,7 @@ public final class Constantes {
     private Constantes() {}
 
     // Tamaño base de la ventana (proporción 16:9)
-    public static final double VENTANA_ANCHO = 1920;
+    public static final double VENTANA_ANCHO = 1880;
     public static final double VENTANA_ALTO  = 1080;
 
     // Matriz del ecosistema
