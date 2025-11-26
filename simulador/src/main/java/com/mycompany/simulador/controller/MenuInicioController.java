@@ -1,10 +1,8 @@
 package com.mycompany.simulador.controller;
 
-import com.mycompany.simulador.utils.VentanaUtils;
-import com.mycompany.simulador.view.LoginView;
+import com.mycompany.simulador.config.Constantes;
 import com.mycompany.simulador.view.MenuInicioView;
-import com.mycompany.simulador.view.RegistroView;
-import javafx.application.Platform;
+
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
@@ -16,15 +14,26 @@ public class MenuInicioController {
     public MenuInicioController(Stage stage) {
         this.stage = stage;
         this.view = new MenuInicioView();
-        Scene scene = new Scene(view.getRoot());
+
+        Scene scene = new Scene(
+                view.getRoot(),
+                Constantes.VENTANA_ANCHO,
+                Constantes.VENTANA_ALTO
+        );
+
         stage.setScene(scene);
-        VentanaUtils.configurarVentanaEstandar(stage);
-        init();
+
+        // Ajusta el Stage exactamente al tamaño de la Scene
+        stage.sizeToScene();
+
+        // Centra la ventana en la pantalla
+        stage.centerOnScreen();
+
+        // Opcional: que no se pueda redimensionar
+        stage.setResizable(false);
     }
 
-    private void init() {
-        view.setOnSignIn(() -> new LoginController(stage));
-        view.setOnSignUp(() -> new RegistroController(stage));
-        view.setOnExit(Platform::exit);
+    public MenuInicioView getView() {
+        return view;
     }
 }
