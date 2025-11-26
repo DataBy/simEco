@@ -17,8 +17,8 @@
         <maven.compiler.target>24</maven.compiler.target>
         <javafx.version>21.0.3</javafx.version>
 
-        <!-- Clase principal -->
-        <main.class>com.mycompany.simulador.Simulador</main.class>
+        <!-- Clase principal REAL -->
+        <main.class>com.mycompany.simulador.main.App</main.class>
     </properties>
 
     <!-- ===============================
@@ -46,7 +46,7 @@
             <version>${javafx.version}</version>
         </dependency>
 
-        <!-- (Opcional) Para cargar sonidos u otros módulos -->
+        <!-- (Opcional) Sonido / multimedia -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-media</artifactId>
@@ -61,7 +61,7 @@
     <build>
         <plugins>
 
-            <!-- Plugin JavaFX (versión correcta) -->
+            <!-- Plugin JavaFX -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
