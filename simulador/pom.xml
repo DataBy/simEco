@@ -12,21 +12,29 @@
          PROPIEDADES DEL PROYECTO
          =============================== -->
     <properties>
-        <!-- Tu versión de JDK -->
-        <maven.compiler.source>24</maven.compiler.source>
-        <maven.compiler.target>24</maven.compiler.target>
-        <javafx.version>21.0.3</javafx.version>
+        <!-- Ajusta según tu JDK -->
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
 
-        <!-- Clase principal REAL -->
+        <!-- JavaFX version -->
+        <javafx.version>21.0.2</javafx.version>
+
+        <!-- Clase principal -->
         <main.class>com.mycompany.simulador.main.App</main.class>
     </properties>
 
     <!-- ===============================
          DEPENDENCIAS
-         =============================== -->
+       =============================== -->
     <dependencies>
 
-        <!-- JavaFX -->
+        <!-- JavaFX módulos base -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-base</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
@@ -35,73 +43,67 @@
 
         <dependency>
             <groupId>org.openjfx</groupId>
-            <artifactId>javafx-fxml</artifactId>
-            <version>${javafx.version}</version>
-        </dependency>
-
-        <!-- (Opcional) Animaciones -->
-        <dependency>
-            <groupId>org.openjfx</groupId>
             <artifactId>javafx-graphics</artifactId>
             <version>${javafx.version}</version>
         </dependency>
 
-        <!-- (Opcional) Sonido / multimedia -->
+        <!-- Opcional: JavaFX FXML -->
         <dependency>
             <groupId>org.openjfx</groupId>
-            <artifactId>javafx-media</artifactId>
+            <artifactId>javafx-fxml</artifactId>
             <version>${javafx.version}</version>
         </dependency>
 
     </dependencies>
 
     <!-- ===============================
-         BUILD + PLUGINS
-         =============================== -->
+         BUILD (AQUÍ VAN resources)
+       =============================== -->
     <build>
-        <plugins>
 
-            <!-- Plugin JavaFX -->
+        <!-- Para compilar correctamente JavaFX -->
+        <plugins>
+            <!-- Plugin para ejecutar JavaFX con "mvn javafx:run" -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
                     <mainClass>${main.class}</mainClass>
-                    <launcher>APP</launcher>
                 </configuration>
             </plugin>
 
-            <!-- Compilador JDK 24 -->
+            <!-- Plugin de compilación estándar -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>3.10.1</version>
                 <configuration>
-                    <release>24</release>
-                    <encoding>UTF-8</encoding>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
                 </configuration>
             </plugin>
         </plugins>
-    </build>
 
-    <!-- ===============================
-        DONDE VAN IMÁGENES Y ARCHIVOS
-        =============================== -->
-    <resources>
-        <resource>
-            <directory>src/main/java</directory>
-            <includes>
-                <include>**/*.png</include>
-                <include>**/*.jpg</include>
-                <include>**/*.jpeg</include>
-                <include>**/*.json</include>
-                <include>**/*.txt</include>
-            </includes>
-        </resource>
-        <resource>
-            <directory>src/main/resources</directory>
-        </resource>
-    </resources>
+        <!-- AQUI SI SE PERMITE resources -->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+
+            <!-- Soporte para assets en src/main/java -->
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.png</include>
+                    <include>**/*.jpg</include>
+                </includes>
+            </resource>
+        </resources>
+
+    </build>
 
 </project>
