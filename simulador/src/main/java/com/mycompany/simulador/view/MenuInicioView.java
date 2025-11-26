@@ -51,10 +51,17 @@ public class MenuInicioView {
         // ======================================================
         // 2. FONDO RESPONSIVE (escala automáticamente)
         // ======================================================
-        ImageView background = IconosUtils.crearImageViewFondo(
-                RutasArchivos.INICIO_BACKGROUND,
-                root
-        );
+        ImageView background = new ImageView(
+        IconosUtils.cargarImagen(RutasArchivos.INICIO_BACKGROUND)
+);
+
+        // Fondo sin preserveRatio para cubrir todo
+        background.setPreserveRatio(false);
+        background.fitWidthProperty().bind(root.widthProperty().add(20));  // expande 10px por lado
+        background.fitHeightProperty().bind(root.heightProperty().add(20));
+
+        background.setTranslateX(-10);  // centra la expansión
+        background.setTranslateY(-10);
 
         // ======================================================
         // 3. ORDEN CORRECTO DE CAPAS (z-index)
