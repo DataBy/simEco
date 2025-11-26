@@ -7,8 +7,8 @@ import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 
 public class MenuInicioView {
 
@@ -19,11 +19,11 @@ public class MenuInicioView {
 
     public MenuInicioView() {
 
-        // 🔥 Evita cualquier borde o color adicional en la vista
+        // Fondo sin bordes
         root.setStyle("-fx-padding: 0; -fx-background-color: transparent;");
 
         // ======================================================
-        // 1. CONFIGURACIÓN DE BOTONES CON HOVER REAL
+        // 1. Configurar iconos con hover
         // ======================================================
         IconosUtils.configurarBotonConHover(
                 btnSignIn,
@@ -43,41 +43,59 @@ public class MenuInicioView {
                 RutasArchivos.INICIO_BTN_EXIT_HOVER
         );
 
-        // Contenedor vertical para los botones
-        VBox vbox = new VBox(25); // separación entre botones
-        vbox.setAlignment(Pos.CENTER);
-        vbox.getChildren().addAll(btnSignIn, btnSignUp, btnExit);
-
-
-
-        // AJUSTA BACKGROUND PARA QUE NO HAYA BORDES. JARVIS USE ESTO PARA SU UI
-
         // ======================================================
-        // 2. FONDO RESPONSIVE (escala automáticamente)
+        // 2. Fondo responsive
         // ======================================================
         ImageView background = new ImageView(
-        IconosUtils.cargarImagen(RutasArchivos.INICIO_BACKGROUND)
+                IconosUtils.cargarImagen(RutasArchivos.INICIO_BACKGROUND)
         );
-        background.setPreserveRatio(false);
-        background.fitWidthProperty().bind(root.widthProperty().add(20));  // expande 10px por lado
-        background.fitHeightProperty().bind(root.heightProperty().add(20));
 
-        background.setTranslateX(-10);  // centra la expansión
+        background.setPreserveRatio(false);
+        background.fitWidthProperty().bind(root.widthProperty().add(20));
+        background.fitHeightProperty().bind(root.heightProperty().add(20));
+        background.setTranslateX(-10);
         background.setTranslateY(-10);
 
+
         // ======================================================
-        // 3. ORDEN CORRECTO DE CAPAS (z-index)
+        // 3. BOTONES POSICIONADOS COMO PEDISTE
         // ======================================================
-        root.getChildren().addAll(background, vbox);
+
+        // Botones SignIn y SignUp juntos, abajo, horizontalmente
+        HBox bottomButtons = new HBox(20);
+        bottomButtons.setAlignment(Pos.CENTER);
+        bottomButtons.getChildren().addAll(btnSignIn, btnSignUp);
+
+        // Los bajo 80px para que estén justo sobre la parte inferior del cuadro central
+        bottomButtons.setTranslateY(400);  
+
+
+        // Botón Exit arriba a la izquierda
+        StackPane.setAlignment(btnExit, Pos.TOP_LEFT);
+        btnExit.setTranslateX(750);
+        btnExit.setTranslateY(50);
+
+        // ======================================================
+        // 4. Capa para centrar los botones inferiores
+        // ======================================================
+        StackPane.setAlignment(bottomButtons, Pos.BOTTOM_CENTER);
+
+
+        // ======================================================
+        // 5. Agregar todo en orden correcto
+        // ======================================================
+        root.getChildren().addAll(
+                background,   // fondo
+                bottomButtons, // botones inferior horizontal
+                btnExit       // botón exit arriba izquierda
+        );
     }
 
     public Parent getRoot() {
         return root;
     }
 
-    // ======================================================
-    // 4. Eventos de botones (controlador los usará)
-    // ======================================================
+    // Eventos para el controlador
     public void setOnSignIn(Runnable r) { btnSignIn.setOnAction(e -> r.run()); }
     public void setOnSignUp(Runnable r) { btnSignUp.setOnAction(e -> r.run()); }
     public void setOnExit(Runnable r)   { btnExit.setOnAction(e -> r.run()); }
