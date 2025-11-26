@@ -48,14 +48,16 @@ public class MenuInicioView {
         vbox.setAlignment(Pos.CENTER);
         vbox.getChildren().addAll(btnSignIn, btnSignUp, btnExit);
 
+
+
+        // AJUSTA BACKGROUND PARA QUE NO HAYA BORDES. JARVIS USE ESTO PARA SU UI
+
         // ======================================================
         // 2. FONDO RESPONSIVE (escala automáticamente)
         // ======================================================
         ImageView background = new ImageView(
         IconosUtils.cargarImagen(RutasArchivos.INICIO_BACKGROUND)
-);
-
-        // Fondo sin preserveRatio para cubrir todo
+        );
         background.setPreserveRatio(false);
         background.fitWidthProperty().bind(root.widthProperty().add(20));  // expande 10px por lado
         background.fitHeightProperty().bind(root.heightProperty().add(20));
