@@ -24,6 +24,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.stage.Screen; // <-- NUEVO IMPORT
 
 public class SimulacionView {
 
@@ -210,6 +211,7 @@ public class SimulacionView {
                         IconosUtils.cargarImagen(RutasArchivos.ICON_CELDA_VACIA)
                 );
                 iv.setPreserveRatio(false);
+                iv.setSmooth(true); // <-- SUAVIZADO PARA ESCALADO
                 iv.fitWidthProperty().bind(cellSize);
                 iv.fitHeightProperty().bind(cellSize);
 
@@ -331,8 +333,14 @@ public class SimulacionView {
 
         double size = Math.min(sizeByWidth, sizeByHeight);
 
-        // Limita al tamaño máximo configurado en tus constantes (ej: 102px)
-        double max = Constantes.MATRIZ_TAM_CELDA;
+        // --- LÍMITE MÁXIMO ADAPTADO A PANTALLA ---
+        double screenHeight = Screen.getPrimary().getVisualBounds().getHeight();
+        double maxDesktop = Constantes.MATRIZ_TAM_CELDA; // 102 px
+        double maxLaptop  = 80;                          // más pequeño en pantallas bajas
+
+        // Si la pantalla es "baja" (típico laptop), usamos un máximo menor
+        double max = (screenHeight <= 900) ? maxLaptop : maxDesktop;
+
         if (size > max) size = max;
         if (size < 10)  size = 10;   // tamaño mínimo de seguridad
 
