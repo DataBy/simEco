@@ -84,7 +84,7 @@ public class SimulacionView {
         );
 
         VBox menuIzq = new VBox(18);
-        menuIzq.setPadding(new Insets(40, 24, 40, 24));
+        menuIzq.setPadding(new Insets(80, 24, 40, 24));
         menuIzq.setAlignment(Pos.TOP_CENTER);
 
         // --------- Botones glassy (sin PNG) ----------
@@ -169,14 +169,14 @@ public class SimulacionView {
         );
 
         VBox contDer = new VBox(15);
-        contDer.setPadding(new Insets(40, 24, 40, 24));
+        contDer.setPadding(new Insets(150, 24, 40, 24));
         contDer.setAlignment(Pos.TOP_CENTER);
 
         Label lblHist = new Label("Historial de la Simulación");
         lblHist.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #235217;");
 
         // Panel glassy que crecerá con el alto disponible
-        VBox panelHistorial = crearPanelGlassy(320, 0);
+        VBox panelHistorial = crearPanelGlassy(280, 0);
         VBox.setVgrow(panelHistorial, Priority.ALWAYS);
 
         txtHistorial.setWrapText(true);
@@ -184,8 +184,12 @@ public class SimulacionView {
         txtHistorial.setStyle("-fx-background-color: transparent;");
         txtHistorial.setPrefRowCount(15);
         txtHistorial.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        VBox.setVgrow(txtHistorial, Priority.ALWAYS);
+        txtHistorial.setPrefHeight(480); // ajusta el contenido
 
+        
+        VBox.setVgrow(panelHistorial, Priority.NEVER);
+
+        panelHistorial.setPrefHeight(500);
         panelHistorial.getChildren().add(txtHistorial);
         panelHistorial.setFillWidth(true);
 
