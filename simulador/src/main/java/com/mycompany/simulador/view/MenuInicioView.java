@@ -67,13 +67,13 @@ public class MenuInicioView {
         bottomButtons.getChildren().addAll(btnSignIn, btnSignUp);
 
         // Los bajo 80px para que estén justo sobre la parte inferior del cuadro central
-        bottomButtons.setTranslateY(400);  
+        bottomButtons.setTranslateY(270);  
 
 
         // Botón Exit arriba a la izquierda
         StackPane.setAlignment(btnExit, Pos.TOP_LEFT);
-        btnExit.setTranslateX(750);
-        btnExit.setTranslateY(50);
+        btnExit.setTranslateX(450);
+        btnExit.setTranslateY(30);
 
         // ======================================================
         // 4. Capa para centrar los botones inferiores
