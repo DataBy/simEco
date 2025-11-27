@@ -84,7 +84,7 @@ public class SimulacionView {
         );
 
         VBox menuIzq = new VBox(18);
-        menuIzq.setPadding(new Insets(80, 24, 40, 24));
+        menuIzq.setPadding(new Insets(100, 24, 40, 24));
         menuIzq.setAlignment(Pos.TOP_CENTER);
 
         // --------- Botones glassy (sin PNG) ----------
@@ -169,7 +169,7 @@ public class SimulacionView {
         );
 
         VBox contDer = new VBox(15);
-        contDer.setPadding(new Insets(150, 24, 40, 24));
+        contDer.setPadding(new Insets(100, 24, 40, 24));
         contDer.setAlignment(Pos.TOP_CENTER);
 
         Label lblHist = new Label("Historial de la Simulación");
