@@ -4,8 +4,7 @@ import com.mycompany.simulador.dto.LoginDTO;
 import com.mycompany.simulador.repository.UsuarioRepositoryTXT;
 import com.mycompany.simulador.services.usuario.AutenticacionService;
 import com.mycompany.simulador.view.LoginView;
-import com.mycompany.simulador.view.SimulacionView;
-import javafx.application.Platform;
+
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
@@ -36,7 +35,6 @@ public class LoginController {
             if (usuario == null) {
                 view.mostrarError("Credenciales inválidas");
             } else {
-                view.mostrarMensaje("Bienvenido " + usuario.getNombre());
                 new SimulacionController(stage, usuario.getCorreo());
             }
         });
