@@ -1,3 +1,6 @@
+//mvn clean javafx:run 
+
+
 package com.mycompany.simulador.main;
 
 import com.mycompany.simulador.controller.MenuInicioController;
