@@ -14,6 +14,8 @@ public abstract class Especie {
     private int turnosSinComer;
     private int turnosSobrevividos;
     private boolean comioEnVentana;
+    private int turnosDesdeUltimaComida = Integer.MAX_VALUE;
+    private boolean haComidoAlgunaVez;
     private Genotipo genotipo = new Genotipo();
 
     protected Especie(Tipo tipo, String nombre) {
@@ -36,9 +38,30 @@ public abstract class Especie {
 
     public int getTurnosSobrevividos() { return turnosSobrevividos; }
     public void incrementarTurnosSobrevividos() { this.turnosSobrevividos++; }
+    public void reiniciarTurnosSobrevividos() { this.turnosSobrevividos = 0; }
 
     public boolean isComioEnVentana() { return comioEnVentana; }
     public void setComioEnVentana(boolean comioEnVentana) { this.comioEnVentana = comioEnVentana; }
+
+    public void registrarComida() {
+        this.turnosSinComer = 0;
+        this.turnosDesdeUltimaComida = 0;
+        this.haComidoAlgunaVez = true;
+        this.comioEnVentana = false;
+    }
+
+    public void registrarAyuno() {
+        this.turnosSinComer++;
+        if (turnosDesdeUltimaComida != Integer.MAX_VALUE) {
+            turnosDesdeUltimaComida++;
+        }
+    }
+
+    public boolean haComidoRecientemente(int ventana) {
+        return haComidoAlgunaVez && turnosDesdeUltimaComida < ventana;
+    }
+
+    public boolean isHaComidoAlgunaVez() { return haComidoAlgunaVez; }
 
     public Genotipo getGenotipo() { return genotipo; }
 }

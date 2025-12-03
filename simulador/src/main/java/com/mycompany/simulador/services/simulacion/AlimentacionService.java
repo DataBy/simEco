@@ -7,6 +7,7 @@ import com.mycompany.simulador.model.ecosystem.Ecosistema;
 import com.mycompany.simulador.model.species.Depredador;
 import com.mycompany.simulador.model.species.Especie;
 import com.mycompany.simulador.model.species.TerceraEspecie;
+import com.mycompany.simulador.utils.SimLogger;
 
 public class AlimentacionService implements IAlimentacionStrategy {
 
@@ -18,17 +19,28 @@ public class AlimentacionService implements IAlimentacionStrategy {
                 if (esp == null || !esp.isViva()) continue;
 
                 if (esp instanceof Depredador || esp instanceof TerceraEspecie) {
-                    int extra = esp instanceof TerceraEspecie ? 1 : 0;
-                    if (esp.getTurnosSinComer() >= Constantes.MAX_TURNOS_SIN_COMER_DEPREDADOR + extra) {
-                        c.vaciar();
-                    } else if (esp.isComioEnVentana()) {
-                        esp.reiniciarTurnosSinComer();
-                        esp.setComioEnVentana(false);
+                    if (esp.isComioEnVentana()) {
+                        esp.registrarComida();
                     } else {
-                        esp.incrementarTurnosSinComer();
+                        esp.registrarAyuno();
                     }
+
+                    if (esp.getTurnosSinComer() >= Constantes.MAX_TURNOS_SIN_COMER_DEPREDADOR) {
+                        SimLogger.log(describir(esp) + " muere por hambre en "
+                                + formatear(c));
+                        c.vaciar();
+                    }
+                    esp.setComioEnVentana(false);
                 }
             }
         }
+    }
+
+    private String formatear(Celda c) {
+        return "(" + c.getCoordenada().getFila() + "," + c.getCoordenada().getColumna() + ")";
+    }
+
+    private String describir(Especie esp) {
+        return (esp instanceof TerceraEspecie) ? "Tercera especie" : "Depredador";
     }
 }

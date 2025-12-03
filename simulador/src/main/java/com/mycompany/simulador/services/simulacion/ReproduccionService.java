@@ -12,6 +12,7 @@ import com.mycompany.simulador.model.species.Especie;
 import com.mycompany.simulador.model.species.Presa;
 import com.mycompany.simulador.utils.AleatorioUtils;
 import com.mycompany.simulador.utils.MatrizUtils;
+import com.mycompany.simulador.utils.SimLogger;
 
 public class ReproduccionService implements IReproduccionStrategy {
 
@@ -28,22 +29,35 @@ public class ReproduccionService implements IReproduccionStrategy {
             if (esp == null || !esp.isViva()) continue;
             if (esp instanceof Presa &&
                 esp.getTurnosSobrevividos() >= Constantes.TURNOS_SOBREVIVIR_REPRO_PRESA) {
-                reproducirEnVecinoVacio(e, c, new Presa("Presa"));
-            } else if (esp instanceof Depredador && esp.isComioEnVentana()) {
-                reproducirEnVecinoVacio(e, c, new Depredador("Depredador"));
+                boolean creado = reproducirEnVecinoVacio(e, c, new Presa("Presa"), "Presa");
+                if (creado) {
+                    esp.reiniciarTurnosSobrevividos();
+                }
+            } else if (esp instanceof Depredador &&
+                    esp.haComidoRecientemente(Constantes.VENTANA_TURNOS_REPRO_DEPREDADOR)) {
+                reproducirEnVecinoVacio(e, c, new Depredador("Depredador"), "Depredador");
             }
         }
     }
 
-    private void reproducirEnVecinoVacio(Ecosistema e, Celda origen, Especie cría) {
+    private boolean reproducirEnVecinoVacio(Ecosistema e, Celda origen, Especie cria, String tipo) {
         List<Celda> libres = new ArrayList<>();
         for (var coord : MatrizUtils.vecinosOrtogonales(origen.getCoordenada())) {
             Celda c = e.getCelda(coord.getFila(), coord.getColumna());
             if (c.estaVacia()) libres.add(c);
         }
-        if (libres.isEmpty()) return;
+        if (libres.isEmpty()) {
+            SimLogger.log(tipo + " en " + coord(origen) + " intenta reproducirse, pero no hay espacio libre");
+            return false;
+        }
         Celda destino = AleatorioUtils.elegirAleatorio(libres);
-        destino.setEspecie(cría);
-        cría.setPosicion(destino.getCoordenada());
+        destino.setEspecie(cria);
+        cria.setPosicion(destino.getCoordenada());
+        SimLogger.log(tipo + " en " + coord(origen) + " se reproduce en " + coord(destino));
+        return true;
+    }
+
+    private String coord(Celda c) {
+        return "(" + c.getCoordenada().getFila() + "," + c.getCoordenada().getColumna() + ")";
     }
 }

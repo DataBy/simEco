@@ -12,6 +12,7 @@ import com.mycompany.simulador.model.species.Presa;
 import com.mycompany.simulador.model.species.TerceraEspecie;
 import com.mycompany.simulador.utils.AleatorioUtils;
 import com.mycompany.simulador.utils.MatrizUtils;
+import com.mycompany.simulador.utils.SimLogger;
 
 public class MovimientosService implements IMovimientosStrategy {
 
@@ -41,10 +42,14 @@ public class MovimientosService implements IMovimientosStrategy {
             Celda c = e.getCelda(coord.getFila(), coord.getColumna());
             if (c.estaVacia()) libres.add(c);
         }
-        if (libres.isEmpty()) return;
+        if (libres.isEmpty()) {
+            SimLogger.log("Presa permanece en " + coord(origen) + " (sin celdas libres)");
+            return;
+        }
         Celda destino = AleatorioUtils.elegirAleatorio(libres);
         destino.setEspecie(origen.getEspecie());
         destino.getEspecie().setPosicion(destino.getCoordenada());
+        SimLogger.log("Presa se mueve de " + coord(origen) + " a " + coord(destino));
         origen.vaciar();
     }
 
@@ -66,16 +71,32 @@ public class MovimientosService implements IMovimientosStrategy {
             dep.setPosicion(objetivoPresa.getCoordenada());
             origen.vaciar();
             dep.setComioEnVentana(true);
+            SimLogger.log(describir(dep) + " se mueve de " + coord(origen) + " a " + coord(objetivoPresa)
+                    + " y come una presa");
             return;
         }
         List<Celda> libres = new ArrayList<>();
         for (Celda c : vecinos) {
             if (c.estaVacia()) libres.add(c);
         }
-        if (libres.isEmpty()) return;
+        if (libres.isEmpty()) {
+            SimLogger.log(describir(dep) + " queda en " + coord(origen) + " (sin movimiento posible)");
+            return;
+        }
         Celda destino = AleatorioUtils.elegirAleatorio(libres);
         destino.setEspecie(dep);
         dep.setPosicion(destino.getCoordenada());
+        SimLogger.log(describir(dep) + " se mueve de " + coord(origen) + " a " + coord(destino));
         origen.vaciar();
+    }
+
+    private String coord(Celda c) {
+        return "(" + c.getCoordenada().getFila() + "," + c.getCoordenada().getColumna() + ")";
+    }
+
+    private String describir(Especie esp) {
+        if (esp instanceof TerceraEspecie) return "Tercera especie";
+        if (esp instanceof Depredador) return "Depredador";
+        return "Especie";
     }
 }

@@ -39,6 +39,11 @@ public class SimulacionController {
     private void init() {
         // Solo esto: cuando den clic en "INICIAR SIMULACIÓN" se corre todo
         view.setOnIniciar(this::iniciarSimulacion);
+        view.setOnEscenarioAleatorio(() -> Platform.runLater(view::mostrarEscenarioAleatorio));
+        view.setOnMutacion(() -> Platform.runLater(view::agregarMutacion));
+        view.setOnTerceraEspecie(() -> Platform.runLater(view::agregarTerceraEspecieMixta));
+        view.setOnInicio(() -> Platform.runLater(() -> new MenuInicioController(stage)));
+        view.setOnSalir(Platform::exit);
     }
 
     /**

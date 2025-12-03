@@ -8,15 +8,18 @@ import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.List;
 
+import com.mycompany.simulador.config.AppConfig;
+
 public final class ArchivoUtils {
 
     private ArchivoUtils() {}
 
     public static void escribirLineas(Path path, List<String> lineas, boolean append) {
         try {
+            AppConfig.ensureDataFolder();
             if (append) {
                 Files.write(path, lineas, StandardCharsets.UTF_8,
-                        StandardOpenOption.APPEND);
+                        StandardOpenOption.CREATE, StandardOpenOption.APPEND);
             } else {
                 Files.write(path, lineas, StandardCharsets.UTF_8,
                         StandardOpenOption.CREATE,

@@ -4,6 +4,12 @@ import com.mycompany.simulador.config.Constantes;
 import com.mycompany.simulador.config.RutasArchivos;
 import com.mycompany.simulador.utils.IconosUtils;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
+
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.Insets;
@@ -25,6 +31,8 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Screen; // <-- NUEVO IMPORT
+
+import com.mycompany.simulador.utils.AleatorioUtils;
 
 public class SimulacionView {
 
@@ -60,8 +68,39 @@ public class SimulacionView {
     private final DoubleProperty cellSize =
             new SimpleDoubleProperty(Constantes.MATRIZ_TAM_CELDA);
 
+    private final List<String> iconosPresas = List.of(
+            RutasArchivos.ICON_PRESA,
+            RutasArchivos.ICON_PRESA_GACELA,
+            RutasArchivos.ICON_PRESA_EXTRA
+    );
+    private final List<String> iconosDepredadores = List.of(
+            RutasArchivos.ICON_DEPREDADOR,
+            RutasArchivos.ICON_DEPREDADOR_HIENA,
+            RutasArchivos.ICON_DEPREDADOR_TIGRE
+    );
+    private final List<String> iconosTercera = List.of(
+            RutasArchivos.ICON_TERCERA_ESPECIE,
+            RutasArchivos.ICON_TERCERA_ESPECIE_BUFALO
+    );
+    private final List<String> iconosMutacion = List.of(RutasArchivos.ICON_MUTACION);
+    private final List<String> iconosElementos = List.of(
+            RutasArchivos.ICON_ELEMENTO_ARBUSTO,
+            RutasArchivos.ICON_ELEMENTO_CARRO,
+            RutasArchivos.ICON_ELEMENTO_LAGO,
+            RutasArchivos.ICON_ELEMENTO_PASTO_AMARILLO,
+            RutasArchivos.ICON_ELEMENTO_PASTO_VERDE,
+            RutasArchivos.ICON_ELEMENTO_ROCA,
+            RutasArchivos.ICON_ELEMENTO_TRONCO
+    );
+
+    private char[][] matrizBase;
+    private final List<int[]> mutaciones = new ArrayList<>();
+    private final Set<String> tercerasBufalo = new HashSet<>();
+    private boolean siguienteBufalo = true;
+
     public SimulacionView() {
         construirUI();
+        inicializarEstadoInteractivo();
     }
 
     private void construirUI() {
@@ -244,6 +283,15 @@ public class SimulacionView {
         root.setRight(panelDer);
     }
 
+    private void inicializarEstadoInteractivo() {
+        matrizBase = matrizVacia();
+        pintarMatriz(matrizBase);
+
+        rbFacil.setOnAction(e -> aplicarDistribucionSeleccion());
+        rbMedio.setOnAction(e -> aplicarDistribucionSeleccion());
+        rbDificil.setOnAction(e -> aplicarDistribucionSeleccion());
+    }
+
     // ----------------------------------------------------------
     // Estilos para botones glassy
     // ----------------------------------------------------------
@@ -379,24 +427,273 @@ public class SimulacionView {
         btnInicio.setOnAction(e -> r.run());
     }
 
+    public void setOnEscenarioAleatorio(Runnable r) {
+        btnAleatorio.setOnAction(e -> r.run());
+    }
+
+    public void setOnMutacion(Runnable r) {
+        btnMutacion.setOnAction(e -> r.run());
+    }
+
+    public void setOnTerceraEspecie(Runnable r) {
+        btnTercera.setOnAction(e -> r.run());
+    }
+
     public void log(String mensaje) {
         txtHistorial.appendText(mensaje + "\n");
     }
 
     public void actualizarMatriz(char[][] simbolos) {
+        matrizBase = normalizar(simbolos);
+        moverMutacionesLibres();
+        pintarMatriz(matrizBase);
+    }
+
+    public void mostrarEscenarioAleatorio() {
+        asegurarMatrizBase();
+        char[][] m = matrizVacia();
+        // conservar terceras existentes
         for (int i = 0; i < Constantes.MATRIZ_FILAS; i++) {
             for (int j = 0; j < Constantes.MATRIZ_COLUMNAS; j++) {
-
-                char c = simbolos[i][j];
-                String ruta;
-
-                if (c == 'P')      ruta = RutasArchivos.ICON_PRESA;
-                else if (c == 'D') ruta = RutasArchivos.ICON_DEPREDADOR;
-                else if (c == 'T') ruta = RutasArchivos.ICON_TERCERA_ESPECIE;
-                else               ruta = RutasArchivos.ICON_CELDA_VACIA;
-
-                matrizCeldas[i][j].setImage(IconosUtils.cargarImagen(ruta));
+                if (matrizBase[i][j] == 'T') {
+                    m[i][j] = 'T';
+                }
             }
         }
+        int total = Constantes.MATRIZ_FILAS * Constantes.MATRIZ_COLUMNAS;
+        int terceras = contar('T');
+        int vacias = (int) Math.round(total * 0.4);
+        int slotsEspecies = Math.max(0, total - vacias - terceras);
+
+        colocarSimbolos(m, 'P', slotsEspecies / 2);
+        colocarSimbolos(m, 'D', slotsEspecies - slotsEspecies / 2);
+        rellenarElementos(m);
+        matrizBase = normalizar(m);
+        pintarMatriz(matrizBase);
+    }
+
+    public void aplicarDistribucionSeleccion() {
+        aplicarDistribucionDificultad(getDificultad());
+    }
+
+    public void agregarMutacion() {
+        asegurarMatrizBase();
+        int[] pos = elegirCeldaLibre();
+        if (pos == null) {
+            pos = new int[]{
+                    ThreadLocalRandom.current().nextInt(Constantes.MATRIZ_FILAS),
+                    ThreadLocalRandom.current().nextInt(Constantes.MATRIZ_COLUMNAS)
+            };
+        }
+        mutaciones.add(pos);
+        pintarMatriz(matrizBase);
+    }
+
+    public void agregarTerceraEspecieMixta() {
+        asegurarMatrizBase();
+        int[] pos = elegirCeldaLibre();
+        if (pos == null) return;
+        matrizBase[pos[0]][pos[1]] = 'T';
+        String key = pos[0] + "-" + pos[1];
+        if (siguienteBufalo) {
+            tercerasBufalo.add(key);
+        } else {
+            tercerasBufalo.remove(key);
+        }
+        siguienteBufalo = !siguienteBufalo;
+        pintarMatriz(matrizBase);
+    }
+
+    // ----------------------------------------------------------
+    // Helpers de matriz
+    // ----------------------------------------------------------
+    private void aplicarDistribucionDificultad(String dificultad) {
+        int total = Constantes.MATRIZ_FILAS * Constantes.MATRIZ_COLUMNAS;
+        int terceras = contar('T');
+        int vacias = (int) Math.round(total * 0.4);
+        int slotsEspecies = Math.max(0, total - vacias - terceras);
+
+        int presas;
+        int depredadores;
+        if ("FACIL".equalsIgnoreCase(dificultad)) {
+            presas = (int) Math.round(slotsEspecies * 0.7);
+        } else if ("DIFICIL".equalsIgnoreCase(dificultad)) {
+            presas = (int) Math.round(slotsEspecies * 0.3);
+        } else {
+            presas = (int) Math.round(slotsEspecies * 0.5);
+        }
+        depredadores = Math.max(0, slotsEspecies - presas);
+
+        char[][] m = matrizVacia();
+        // conservar terceras
+        for (int i = 0; i < Constantes.MATRIZ_FILAS; i++) {
+            for (int j = 0; j < Constantes.MATRIZ_COLUMNAS; j++) {
+                if (matrizBase != null && matrizBase[i][j] == 'T') {
+                    m[i][j] = 'T';
+                }
+            }
+        }
+        colocarSimbolos(m, 'P', presas);
+        colocarSimbolos(m, 'D', depredadores);
+        rellenarElementos(m);
+        matrizBase = normalizar(m);
+        pintarMatriz(matrizBase);
+    }
+
+    private void colocarSimbolos(char[][] m, char simbolo, int cantidad) {
+        int intentos = 0;
+        int colocados = 0;
+        int maxIntentos = cantidad * 10 + 50;
+        while (colocados < cantidad && intentos < maxIntentos) {
+            intentos++;
+            int f = AleatorioUtils.enteroEnRango(0, Constantes.MATRIZ_FILAS - 1);
+            int c = AleatorioUtils.enteroEnRango(0, Constantes.MATRIZ_COLUMNAS - 1);
+            if ((m[f][c] == 'E' || m[f][c] == '.') && !esMutacion(f, c)) {
+                m[f][c] = simbolo;
+                colocados++;
+            }
+        }
+    }
+
+    private void moverMutacionesLibres() {
+        if (mutaciones.isEmpty()) return;
+        List<int[]> nuevas = new ArrayList<>();
+        Set<String> ocupadas = new HashSet<>();
+        for (int[] m : mutaciones) {
+            int f = AleatorioUtils.enteroEnRango(0, Constantes.MATRIZ_FILAS - 1);
+            int c = AleatorioUtils.enteroEnRango(0, Constantes.MATRIZ_COLUMNAS - 1);
+            String key = f + "-" + c;
+            if (ocupadas.add(key)) {
+                nuevas.add(new int[]{f, c});
+            }
+        }
+        mutaciones.clear();
+        mutaciones.addAll(nuevas);
+    }
+
+    private void pintarMatriz(char[][] base) {
+        if (base == null) return;
+        char[][] render = normalizar(base);
+        matrizBase = render;
+        for (int i = 0; i < Constantes.MATRIZ_FILAS; i++) {
+            for (int j = 0; j < Constantes.MATRIZ_COLUMNAS; j++) {
+                char simbolo = simboloParaRender(render, i, j);
+                String ruta = rutaParaSimbolo(simbolo, i, j);
+                var img = IconosUtils.cargarImagen(ruta != null ? ruta : RutasArchivos.ICON_ELEMENTO_PASTO_VERDE);
+                if (img == null) {
+                    img = IconosUtils.cargarImagen(RutasArchivos.ICON_ELEMENTO_PASTO_VERDE);
+                }
+                matrizCeldas[i][j].setImage(img);
+            }
+        }
+    }
+
+    private char simboloParaRender(char[][] base, int f, int c) {
+        if (esMutacion(f, c)) return 'M';
+        return base[f][c];
+    }
+
+    private String rutaParaSimbolo(char c, int f, int cIndex) {
+        String ruta = switch (c) {
+            case 'P' -> elegirIcono(iconosPresas, RutasArchivos.ICON_PRESA);
+            case 'D' -> elegirIcono(iconosDepredadores, RutasArchivos.ICON_DEPREDADOR);
+            case 'T' -> {
+                String key = f + "-" + cIndex;
+                boolean esBufalo = tercerasBufalo.contains(key);
+                yield esBufalo
+                        ? elegirIcono(List.of(RutasArchivos.ICON_TERCERA_ESPECIE_BUFALO), RutasArchivos.ICON_TERCERA_ESPECIE_BUFALO)
+                        : elegirIcono(List.of(RutasArchivos.ICON_TERCERA_ESPECIE), RutasArchivos.ICON_TERCERA_ESPECIE);
+            }
+            case 'M' -> elegirIcono(iconosMutacion, RutasArchivos.ICON_MUTACION);
+            case 'E', '.' -> elegirIcono(iconosElementos, RutasArchivos.ICON_ELEMENTO_PASTO_VERDE);
+            default -> elegirIcono(iconosElementos, RutasArchivos.ICON_ELEMENTO_PASTO_VERDE);
+        };
+        return (ruta == null || ruta.isBlank()) ? RutasArchivos.ICON_ELEMENTO_PASTO_VERDE : ruta;
+    }
+
+    private String elegirIcono(List<String> lista, String respaldo) {
+        if (lista == null || lista.isEmpty()) return respaldo;
+        String icono = AleatorioUtils.elegirAleatorio(lista);
+        return (icono == null || icono.isBlank()) ? respaldo : icono;
+    }
+
+    private boolean esMutacion(int f, int c) {
+        for (int[] m : mutaciones) {
+            if (m[0] == f && m[1] == c) return true;
+        }
+        return false;
+    }
+
+    private int contar(char simbolo) {
+        if (matrizBase == null) return 0;
+        int count = 0;
+        for (int i = 0; i < Constantes.MATRIZ_FILAS; i++) {
+            for (int j = 0; j < Constantes.MATRIZ_COLUMNAS; j++) {
+                if (matrizBase[i][j] == simbolo) count++;
+            }
+        }
+        return count;
+    }
+
+    private void rellenarElementos(char[][] m) {
+        for (int i = 0; i < Constantes.MATRIZ_FILAS; i++) {
+            for (int j = 0; j < Constantes.MATRIZ_COLUMNAS; j++) {
+                char val = m[i][j];
+                if (val != 'P' && val != 'D' && val != 'T' && val != 'M' && !esMutacion(i, j)) {
+                    m[i][j] = 'E';
+                }
+            }
+        }
+    }
+
+    private int[] elegirCeldaLibre() {
+        List<int[]> libres = new ArrayList<>();
+        for (int i = 0; i < Constantes.MATRIZ_FILAS; i++) {
+            for (int j = 0; j < Constantes.MATRIZ_COLUMNAS; j++) {
+                if (!esMutacion(i, j)) {
+                    libres.add(new int[]{i, j});
+                }
+            }
+        }
+        return libres.isEmpty() ? null : libres.get(ThreadLocalRandom.current().nextInt(libres.size()));
+    }
+
+    private void asegurarMatrizBase() {
+        if (matrizBase == null) {
+            matrizBase = matrizVacia();
+        }
+    }
+
+    private char[][] matrizVacia() {
+        char[][] m = new char[Constantes.MATRIZ_FILAS][Constantes.MATRIZ_COLUMNAS];
+        for (int i = 0; i < Constantes.MATRIZ_FILAS; i++) {
+            for (int j = 0; j < Constantes.MATRIZ_COLUMNAS; j++) {
+                m[i][j] = 'E';
+            }
+        }
+        return m;
+    }
+
+    private char[][] clonar(char[][] src) {
+        if (src == null) return matrizVacia();
+        char[][] copia = new char[Constantes.MATRIZ_FILAS][Constantes.MATRIZ_COLUMNAS];
+        for (int i = 0; i < Constantes.MATRIZ_FILAS; i++) {
+            System.arraycopy(src[i], 0, copia[i], 0, Constantes.MATRIZ_COLUMNAS);
+        }
+        return copia;
+    }
+
+    private char[][] normalizar(char[][] src) {
+        char[][] copia = clonar(src);
+        rellenarElementos(copia);
+        for (int i = 0; i < Constantes.MATRIZ_FILAS; i++) {
+            for (int j = 0; j < Constantes.MATRIZ_COLUMNAS; j++) {
+                char val = copia[i][j];
+                if (val != 'P' && val != 'D' && val != 'T' && val != 'M' && val != 'E') {
+                    copia[i][j] = 'E';
+                }
+            }
+        }
+        return copia;
     }
 }

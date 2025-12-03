@@ -10,6 +10,7 @@ com\mycompany\simulador\model\genetics\Mutacion.class
 com\mycompany\simulador\controller\RegistroController.class
 com\mycompany\simulador\services\simulacion\SimuladorService.class
 com\mycompany\simulador\services\usuario\AutenticacionService.class
+com\mycompany\simulador\utils\SimLogger.class
 com\mycompany\simulador\services\simulacion\ReproduccionService.class
 com\mycompany\simulador\model\species\Presa.class
 com\mycompany\simulador\controller\LoginController.class

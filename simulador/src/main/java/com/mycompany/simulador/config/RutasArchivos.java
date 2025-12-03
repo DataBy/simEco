@@ -112,13 +112,40 @@ public final class RutasArchivos {
     // ICONOS DE ESPECIES Y ELEMENTOS
     public static final String ICON_PRESA =
             BASE + "/uiSimulacion/escenario/presas/cebra.png";
+    public static final String ICON_PRESA_GACELA =
+            BASE + "/uiSimulacion/escenario/presas/gacela.png";
+    public static final String ICON_PRESA_EXTRA =
+            BASE + "/uiSimulacion/escenario/presas/工.png";
 
     public static final String ICON_DEPREDADOR =
             BASE + "/uiSimulacion/escenario/depravadores/leon.png";
+    public static final String ICON_DEPREDADOR_HIENA =
+            BASE + "/uiSimulacion/escenario/depravadores/hiena.png";
+    public static final String ICON_DEPREDADOR_TIGRE =
+            BASE + "/uiSimulacion/escenario/depravadores/tigre.png";
 
     public static final String ICON_TERCERA_ESPECIE =
             BASE + "/uiSimulacion/escenario/terceraEspecie/leopardo.png";
+    public static final String ICON_TERCERA_ESPECIE_BUFALO =
+            BASE + "/uiSimulacion/escenario/terceraEspecie/bufalo.png";
+
+    public static final String ICON_MUTACION =
+            BASE + "/uiSimulacion/escenario/mutaciones/rino.png";
 
     public static final String ICON_CELDA_VACIA =
             BASE + "/uiSimulacion/escenario/elementos/pastoVerde.png";
+    public static final String ICON_ELEMENTO_ARBUSTO =
+            BASE + "/uiSimulacion/escenario/elementos/arbusto.png";
+    public static final String ICON_ELEMENTO_CARRO =
+            BASE + "/uiSimulacion/escenario/elementos/carro.png";
+    public static final String ICON_ELEMENTO_LAGO =
+            BASE + "/uiSimulacion/escenario/elementos/lago.png";
+    public static final String ICON_ELEMENTO_PASTO_AMARILLO =
+            BASE + "/uiSimulacion/escenario/elementos/pastoAmarillo.png";
+    public static final String ICON_ELEMENTO_PASTO_VERDE =
+            BASE + "/uiSimulacion/escenario/elementos/pastoVerde.png";
+    public static final String ICON_ELEMENTO_ROCA =
+            BASE + "/uiSimulacion/escenario/elementos/roca.png";
+    public static final String ICON_ELEMENTO_TRONCO =
+            BASE + "/uiSimulacion/escenario/elementos/tronco.png";
 }
