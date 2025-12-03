@@ -2,18 +2,22 @@ package com.mycompany.simulador.controller;
 
 import com.mycompany.simulador.config.ConfigSimulacion;
 import com.mycompany.simulador.config.Constantes;
+import com.mycompany.simulador.config.RutasArchivos;
 import com.mycompany.simulador.dto.SimulacionConfigDTO;
 import com.mycompany.simulador.interfaces.ISimulador;
 import com.mycompany.simulador.model.report.ReporteFinal;
 import com.mycompany.simulador.repository.EcossitemaRepositoryTXT;
 import com.mycompany.simulador.repository.EstadoTurnosRepositoryTXT;
 import com.mycompany.simulador.services.simulacion.SimuladorService;
-import com.mycompany.simulador.view.ReportesView;
+import com.mycompany.simulador.view.ResumenView;
 import com.mycompany.simulador.view.SimulacionView;
 
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SimulacionController {
 
@@ -33,13 +37,18 @@ public class SimulacionController {
 
         Scene scene = new Scene(view.getRoot(), stage.getWidth(), stage.getHeight());
         stage.setScene(scene);
+        ((SimuladorService) this.simulador).setLogCallback(msg ->
+                Platform.runLater(() -> view.log(msg)));
         init();
     }
 
     private void init() {
         // Solo esto: cuando den clic en "INICIAR SIMULACIÓN" se corre todo
         view.setOnIniciar(this::iniciarSimulacion);
-        view.setOnEscenarioAleatorio(() -> Platform.runLater(view::mostrarEscenarioAleatorio));
+        view.setOnEscenarioAleatorio(() -> Platform.runLater(() -> {
+            view.setElementosUnicos(RutasArchivos.ICON_ELEMENTO_PASTO_AMARILLO);
+            view.mostrarEscenarioAleatorio();
+        }));
         view.setOnMutacion(() -> Platform.runLater(view::agregarMutacion));
         view.setOnTerceraEspecie(() -> Platform.runLater(view::agregarTerceraEspecieMixta));
         view.setOnInicio(() -> Platform.runLater(() -> new MenuInicioController(stage)));
@@ -91,39 +100,75 @@ public class SimulacionController {
     }
 
     private void iniciarSimulacion() {
-        SimulacionConfigDTO config = crearConfig();
+        SimulacionConfigDTO base = crearConfig();
 
         Thread hilo = new Thread(() -> {
-            ReporteFinal reporte = simulador.ejecutarSimulacion(
-                    config,
-                    (turno, matriz) -> Platform.runLater(() -> view.actualizarMatriz(matriz))
-            );
+            List<ReporteFinal> resultados = new ArrayList<>();
 
-            Platform.runLater(() -> mostrarReportes(reporte));
+            ejecutarEscenario("VERANO", base.getMaxTurnos(),
+                    RutasArchivos.ICON_ELEMENTO_PASTO_AMARILLO, resultados);
+            ejecutarEscenario("PRIMAVERA", base.getMaxTurnos(),
+                    RutasArchivos.ICON_ELEMENTO_PASTO_VERDE, resultados);
+            ejecutarEscenario("INVIERNO", base.getMaxTurnos(),
+                    RutasArchivos.ICON_ELEMENTO_LAGO, resultados);
+
+            Platform.runLater(() -> mostrarReportes(resultados, base.getMaxTurnos()));
         });
 
         hilo.setDaemon(true);
         hilo.start();
     }
 
-    private void mostrarReportes(ReporteFinal reporte) {
-        ReportesView rView = new ReportesView();
+    private void mostrarReportes(List<ReporteFinal> reportes, int turnosPorEscenario) {
+        ResumenView rView = new ResumenView();
         Scene scene = new Scene(rView.getRoot(), stage.getWidth(), stage.getHeight());
         stage.setScene(scene);
 
+        int totalTurnos = turnosPorEscenario * reportes.size();
+        int presasFinales = reportes.stream().mapToInt(ReporteFinal::getPresasFinales).sum();
+        int depredadoresFinales = reportes.stream().mapToInt(ReporteFinal::getDepredadoresFinales).sum();
+        int turnoExtincion = reportes.stream()
+                .mapToInt(ReporteFinal::getTurnoExtincion)
+                .filter(v -> v >= 0)
+                .min()
+                .orElse(-1);
+        double ocupacionProm = reportes.stream()
+                .mapToDouble(ReporteFinal::getPorcentajeOcupacionFinal)
+                .average()
+                .orElse(0);
         int totalCeldas = Constantes.MATRIZ_FILAS * Constantes.MATRIZ_COLUMNAS;
-        int ocupadas = (int) Math.round(
-                reporte.getPorcentajeOcupacionFinal() * totalCeldas / 100.0);
-        int vacias = totalCeldas - ocupadas;
+        int ocupadas = (int) Math.round(ocupacionProm * totalCeldas / 100.0);
+        int vacias = Math.max(0, totalCeldas - ocupadas);
 
         rView.actualizarDatos(
-                reporte.getTotalTurnos(),
-                reporte.getPresasFinales(),
-                reporte.getDepredadoresFinales(),
-                reporte.getTurnoExtincion(),
+                totalTurnos,
+                presasFinales,
+                depredadoresFinales,
+                turnoExtincion,
                 ocupadas, vacias
         );
+        rView.actualizarComparativo(reportes);
+    }
 
-        new ReportesController(stage, rView, reporte, correoUsuario, totalCeldas);
+    private void ejecutarEscenario(String nombre, int turnos, String elemento,
+                                   List<ReporteFinal> resultados) {
+        SimulacionConfigDTO cfg = crearConfig();
+        cfg.setEscenario(nombre);
+        cfg.setMaxTurnos(turnos);
+        // Fijar fondo sin mezclar ni reiniciar especies
+        java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
+        Platform.runLater(() -> {
+            view.setElementosUnicosSinReset(elemento);
+            latch.countDown();
+        });
+        try {
+            latch.await();
+        } catch (InterruptedException ignored) { }
+
+        ReporteFinal r = simulador.ejecutarSimulacion(
+                cfg,
+                (turno, matriz) -> Platform.runLater(() -> view.actualizarMatriz(matriz))
+        );
+        resultados.add(r);
     }
 }

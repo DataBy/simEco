@@ -20,12 +20,13 @@ import com.mycompany.simulador.utils.SimLogger;
 public class SimuladorService implements ISimulador {
 
     private final EcosistemaService ecosistemaService = new EcosistemaService();
-    private final IMovimientosStrategy movimientosStrategy = new MovimientosService();
+    private final MovimientosService movimientosStrategy = new MovimientosService();
     private final IAlimentacionStrategy alimentacionStrategy = new AlimentacionService();
     private final IReproduccionStrategy reproduccionStrategy = new ReproduccionService();
     private final IGeneticaService geneticaService = new MutacionService();
     private final IEcosistemaRepository ecosistemaRepository;
     private final IEstadoTurnosRepository estadoTurnosRepository;
+    private java.util.function.Consumer<String> logCallback;
 
     public SimuladorService(IEcosistemaRepository ecoRepo,
                             IEstadoTurnosRepository estadoRepo) {
@@ -48,8 +49,23 @@ public class SimuladorService implements ISimulador {
         int turnoExtincion = -1;
 
         for (int turno = 1; turno <= config.getMaxTurnos(); turno++) {
+            int turnoActual = turno;
+            movimientosStrategy.setLogCallback(m -> {
+                SimLogger.log(m);
+                if (logCallback != null) logCallback.accept(m);
+            });
             SimLogger.log("Turno " + turno + " - movimiento");
             movimientosStrategy.moverEspecies(e);
+
+            // Mostrar solo un refresh por tick tras el movimiento
+            if (listener != null) {
+                char[][] mPaso = ecosistemaService.construirMatrizSimbolos(e);
+                listener.onTurnoActualizado(turnoActual, mPaso);
+            }
+            try {
+                Thread.sleep(Constantes.DELAY_PASO_MS);
+            } catch (InterruptedException ignored) { }
+
             SimLogger.log("Turno " + turno + " - alimentacion");
             alimentacionStrategy.procesarAlimentacion(e);
             SimLogger.log("Turno " + turno + " - reproduccion");
@@ -102,5 +118,9 @@ public class SimuladorService implements ISimulador {
                 + ", Depredadores finales=" + ultimo.getDepredadores()
                 + ", Tercera especie final=" + ultimo.getTerceraEspecie());
         return reporteFinal;
+    }
+
+    public void setLogCallback(java.util.function.Consumer<String> cb) {
+        this.logCallback = cb;
     }
 }

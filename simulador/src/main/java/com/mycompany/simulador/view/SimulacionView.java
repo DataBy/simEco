@@ -83,7 +83,7 @@ public class SimulacionView {
             RutasArchivos.ICON_TERCERA_ESPECIE_BUFALO
     );
     private final List<String> iconosMutacion = List.of(RutasArchivos.ICON_MUTACION);
-    private final List<String> iconosElementos = List.of(
+    private List<String> iconosElementos = new ArrayList<>(List.of(
             RutasArchivos.ICON_ELEMENTO_ARBUSTO,
             RutasArchivos.ICON_ELEMENTO_CARRO,
             RutasArchivos.ICON_ELEMENTO_LAGO,
@@ -91,7 +91,7 @@ public class SimulacionView {
             RutasArchivos.ICON_ELEMENTO_PASTO_VERDE,
             RutasArchivos.ICON_ELEMENTO_ROCA,
             RutasArchivos.ICON_ELEMENTO_TRONCO
-    );
+    ));
 
     private char[][] matrizBase;
     private final List<int[]> mutaciones = new ArrayList<>();
@@ -439,6 +439,24 @@ public class SimulacionView {
         btnTercera.setOnAction(e -> r.run());
     }
 
+    public void setElementosUnicos(String rutaElemento) {
+        setElementosInterno(rutaElemento, true);
+    }
+
+    public void setElementosUnicosSinReset(String rutaElemento) {
+        setElementosInterno(rutaElemento, false);
+    }
+
+    private void setElementosInterno(String rutaElemento, boolean reset) {
+        this.iconosElementos = new ArrayList<>(List.of(rutaElemento));
+        if (reset) {
+            this.mutaciones.clear();
+            this.tercerasBufalo.clear();
+            this.matrizBase = matrizVacia();
+        }
+        pintarMatriz(matrizBase != null ? matrizBase : matrizVacia());
+    }
+
     public void log(String mensaje) {
         txtHistorial.appendText(mensaje + "\n");
     }
@@ -594,6 +612,9 @@ public class SimulacionView {
     }
 
     private String rutaParaSimbolo(char c, int f, int cIndex) {
+        String fallbackElemento = iconosElementos.isEmpty()
+                ? RutasArchivos.ICON_ELEMENTO_PASTO_VERDE
+                : iconosElementos.get(0);
         String ruta = switch (c) {
             case 'P' -> elegirIcono(iconosPresas, RutasArchivos.ICON_PRESA);
             case 'D' -> elegirIcono(iconosDepredadores, RutasArchivos.ICON_DEPREDADOR);
@@ -605,10 +626,10 @@ public class SimulacionView {
                         : elegirIcono(List.of(RutasArchivos.ICON_TERCERA_ESPECIE), RutasArchivos.ICON_TERCERA_ESPECIE);
             }
             case 'M' -> elegirIcono(iconosMutacion, RutasArchivos.ICON_MUTACION);
-            case 'E', '.' -> elegirIcono(iconosElementos, RutasArchivos.ICON_ELEMENTO_PASTO_VERDE);
-            default -> elegirIcono(iconosElementos, RutasArchivos.ICON_ELEMENTO_PASTO_VERDE);
+            case 'E', '.' -> fallbackElemento;
+            default -> fallbackElemento;
         };
-        return (ruta == null || ruta.isBlank()) ? RutasArchivos.ICON_ELEMENTO_PASTO_VERDE : ruta;
+        return (ruta == null || ruta.isBlank()) ? fallbackElemento : ruta;
     }
 
     private String elegirIcono(List<String> lista, String respaldo) {

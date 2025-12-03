@@ -24,6 +24,7 @@ com\mycompany\simulador\services\genetica\MutacionService.class
 com\mycompany\simulador\model\ecosystem\Coordenada.class
 com\mycompany\simulador\dto\LoginDTO.class
 com\mycompany\simulador\utils\CifradoUtils.class
+com\mycompany\simulador\view\ResumenView.class
 com\mycompany\simulador\view\ReportesView.class
 com\mycompany\simulador\model\user\Usuario.class
 com\mycompany\simulador\utils\IconosUtils.class

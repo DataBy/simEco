@@ -13,30 +13,73 @@ import com.mycompany.simulador.model.species.TerceraEspecie;
 import com.mycompany.simulador.utils.AleatorioUtils;
 import com.mycompany.simulador.utils.MatrizUtils;
 import com.mycompany.simulador.utils.SimLogger;
+import java.util.function.Consumer;
+import java.util.Collections;
 
 public class MovimientosService implements IMovimientosStrategy {
 
-    @Override
-    public void moverEspecies(Ecosistema e) {
-        List<Celda> celdas = new ArrayList<>();
-        for (Celda[] fila : e.getMatriz()) {
-            for (Celda c : fila) {
-                if (!c.estaVacia()) celdas.add(c);
-            }
-        }
-        for (Celda origen : celdas) {
-            Especie esp = origen.getEspecie();
-            if (esp == null || !esp.isViva()) continue;
-            if (esp instanceof Presa) {
-                moverPresa(e, origen);
-            } else if (esp instanceof Depredador || esp instanceof TerceraEspecie) {
-                moverDepredadorLike(e, origen);
-            }
-            esp.incrementarTurnosSobrevividos();
-        }
+    private Consumer<Ecosistema> stepCallback;
+    private Consumer<String> logCallback;
+
+    public void setStepCallback(Consumer<Ecosistema> callback) {
+        this.stepCallback = callback;
     }
 
-    private void moverPresa(Ecosistema e, Celda origen) {
+    public void setLogCallback(Consumer<String> callback) {
+        this.logCallback = callback;
+    }
+
+    @Override
+    public void moverEspecies(Ecosistema e) {
+        moverEspecies(e, stepCallback);
+    }
+
+    @Override
+    public void moverEspecies(Ecosistema e, Consumer<Ecosistema> stepCb) {
+        List<Celda> candidatos = new ArrayList<>();
+        for (Celda[] fila : e.getMatriz()) {
+            for (Celda c : fila) {
+                Especie esp = c.getEspecie();
+                if (esp != null && esp.isViva() &&
+                        (esp instanceof Presa || esp instanceof Depredador || esp instanceof TerceraEspecie)) {
+                    candidatos.add(c);
+                }
+            }
+        }
+        // Incrementa supervivencia para todos los vivos
+        for (Celda c : candidatos) {
+            c.getEspecie().incrementarTurnosSobrevividos();
+        }
+
+        if (candidatos.isEmpty()) {
+            notificarPaso(e, stepCb);
+            return;
+        }
+
+        Celda origen = AleatorioUtils.elegirAleatorio(candidatos);
+        Especie esp = origen.getEspecie();
+        if (esp == null || !esp.isViva()) {
+            notificarPaso(e, stepCb);
+            return;
+        }
+
+        Celda destino = null;
+        boolean comio = false;
+        if (esp instanceof Presa) {
+            destino = moverPresa(e, origen);
+        } else if (esp instanceof Depredador || esp instanceof TerceraEspecie) {
+            var res = moverDepredadorLike(e, origen);
+            destino = res[0];
+            comio = res[1] != null;
+        }
+
+        if (destino != null) {
+            logMovimiento(esp, origen.getCoordenada(), destino.getCoordenada(), comio);
+        }
+        notificarPaso(e, stepCb);
+    }
+
+    private Celda moverPresa(Ecosistema e, Celda origen) {
         List<Celda> libres = new ArrayList<>();
         for (var coord : MatrizUtils.vecinosOrtogonales(origen.getCoordenada())) {
             Celda c = e.getCelda(coord.getFila(), coord.getColumna());
@@ -44,16 +87,17 @@ public class MovimientosService implements IMovimientosStrategy {
         }
         if (libres.isEmpty()) {
             SimLogger.log("Presa permanece en " + coord(origen) + " (sin celdas libres)");
-            return;
+            return null;
         }
         Celda destino = AleatorioUtils.elegirAleatorio(libres);
         destino.setEspecie(origen.getEspecie());
         destino.getEspecie().setPosicion(destino.getCoordenada());
         SimLogger.log("Presa se mueve de " + coord(origen) + " a " + coord(destino));
         origen.vaciar();
+        return destino;
     }
 
-    private void moverDepredadorLike(Ecosistema e, Celda origen) {
+    private Celda[] moverDepredadorLike(Ecosistema e, Celda origen) {
         Especie dep = origen.getEspecie();
         List<Celda> vecinos = new ArrayList<>();
         for (var coord : MatrizUtils.vecinosOrtogonales(origen.getCoordenada())) {
@@ -73,7 +117,7 @@ public class MovimientosService implements IMovimientosStrategy {
             dep.setComioEnVentana(true);
             SimLogger.log(describir(dep) + " se mueve de " + coord(origen) + " a " + coord(objetivoPresa)
                     + " y come una presa");
-            return;
+            return new Celda[]{objetivoPresa, objetivoPresa};
         }
         List<Celda> libres = new ArrayList<>();
         for (Celda c : vecinos) {
@@ -81,13 +125,14 @@ public class MovimientosService implements IMovimientosStrategy {
         }
         if (libres.isEmpty()) {
             SimLogger.log(describir(dep) + " queda en " + coord(origen) + " (sin movimiento posible)");
-            return;
+            return new Celda[]{null, null};
         }
         Celda destino = AleatorioUtils.elegirAleatorio(libres);
         destino.setEspecie(dep);
         dep.setPosicion(destino.getCoordenada());
         SimLogger.log(describir(dep) + " se mueve de " + coord(origen) + " a " + coord(destino));
         origen.vaciar();
+        return new Celda[]{destino, null};
     }
 
     private String coord(Celda c) {
@@ -98,5 +143,20 @@ public class MovimientosService implements IMovimientosStrategy {
         if (esp instanceof TerceraEspecie) return "Tercera especie";
         if (esp instanceof Depredador) return "Depredador";
         return "Especie";
+    }
+
+    private void notificarPaso(Ecosistema e, Consumer<Ecosistema> stepCb) {
+        if (stepCb != null) {
+            stepCb.accept(e);
+        }
+    }
+
+    private void logMovimiento(Especie esp, com.mycompany.simulador.model.ecosystem.Coordenada origen,
+                               com.mycompany.simulador.model.ecosystem.Coordenada destino, boolean comio) {
+        if (logCallback == null) return;
+        String tipo = describir(esp);
+        String msg = "Movimiento: " + tipo + " de (" + origen.getFila() + "," + origen.getColumna() + ") a ("
+                + destino.getFila() + "," + destino.getColumna() + ")" + (comio ? " (comió)" : "");
+        logCallback.accept(msg);
     }
 }

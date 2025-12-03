@@ -14,7 +14,9 @@ public final class Constantes {
     public static final int MATRIZ_TAM_CELDA = 102;
 
     // Delay entre turnos (ms)
-    public static final int DELAY_TURNO_MS = 30000;
+    public static final int DELAY_TURNO_MS = 1500;
+    // Delay visible entre pasos dentro de un turno (ms)
+    public static final int DELAY_PASO_MS  = 1500;
 
     // Reglas del ecosistema
     public static final int MAX_TURNOS_SIN_COMER_DEPREDADOR = 3;
