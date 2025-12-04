@@ -8,7 +8,6 @@ import com.mycompany.simulador.interfaces.IAlimentacionStrategy;
 import com.mycompany.simulador.interfaces.IEcosistemaRepository;
 import com.mycompany.simulador.interfaces.IEstadoTurnosRepository;
 import com.mycompany.simulador.interfaces.IGeneticaService;
-import com.mycompany.simulador.interfaces.IMovimientosStrategy;
 import com.mycompany.simulador.interfaces.IReproduccionStrategy;
 import com.mycompany.simulador.interfaces.ISimulador;
 import com.mycompany.simulador.model.ecosystem.Ecosistema;
@@ -47,13 +46,23 @@ public class SimuladorService implements ISimulador {
         Ecosistema e = ecosistemaService.crearEcosistema(config);
         ReporteFinal reporteFinal = new ReporteFinal();
         int turnoExtincion = -1;
+        java.util.List<TurnoEvento> eventosTurno = new java.util.ArrayList<>();
 
         for (int turno = 1; turno <= config.getMaxTurnos(); turno++) {
             int turnoActual = turno;
             movimientosStrategy.setLogCallback(m -> {
-                SimLogger.log(m);
-                if (logCallback != null) logCallback.accept(m);
+                logEvent(m);
             });
+            movimientosStrategy.setStepCallback(paso -> {
+                if (listener == null) return;
+                char[][] matrizPaso = ecosistemaService.construirMatrizSimbolos(e);
+                listener.onMovimiento(turnoActual, paso.origen(), paso.destino(), paso.comio(), paso.esDepredador(), matrizPaso);
+            });
+            if (reproduccionStrategy instanceof ReproduccionService repro) {
+                repro.setLogCallback(this::logEvent);
+                repro.setEventoCallback(eventosTurno::add);
+            }
+            movimientosStrategy.setEventoCallback(eventosTurno::add);
             SimLogger.log("Turno " + turno + " - movimiento");
             movimientosStrategy.moverEspecies(e);
 
@@ -74,7 +83,11 @@ public class SimuladorService implements ISimulador {
             // Un solo refresh por tick: estado final del turno (solo un movimiento).
             if (listener != null) {
                 listener.onTurnoActualizado(turno, matrizSimbolos);
+                if (!eventosTurno.isEmpty()) {
+                    listener.onEventos(turno, new java.util.ArrayList<>(eventosTurno));
+                }
             }
+            eventosTurno.clear();
 
             SimLogger.log("Resumen turno " + turno + ": Presas=" + t.getPresas()
                     + ", Depredadores=" + t.getDepredadores()
@@ -114,5 +127,12 @@ public class SimuladorService implements ISimulador {
 
     public void setLogCallback(java.util.function.Consumer<String> cb) {
         this.logCallback = cb;
+    }
+
+    private void logEvent(String msg) {
+        SimLogger.log(msg);
+        if (logCallback != null) {
+            logCallback.accept(msg);
+        }
     }
 }

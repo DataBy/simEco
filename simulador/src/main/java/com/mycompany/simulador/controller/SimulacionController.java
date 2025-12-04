@@ -1,5 +1,8 @@
 package com.mycompany.simulador.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.mycompany.simulador.config.ConfigSimulacion;
 import com.mycompany.simulador.config.Constantes;
 import com.mycompany.simulador.config.RutasArchivos;
@@ -15,9 +18,6 @@ import com.mycompany.simulador.view.SimulacionView;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class SimulacionController {
 
@@ -167,7 +167,27 @@ public class SimulacionController {
 
         ReporteFinal r = simulador.ejecutarSimulacion(
                 cfg,
-                (turno, matriz) -> Platform.runLater(() -> view.actualizarMatriz(matriz))
+                new ISimulador.SimulacionListener() {
+                    @Override
+                    public void onTurnoActualizado(int turnoActual, char[][] matrizSimbolos) {
+                        Platform.runLater(() -> view.actualizarMatriz(matrizSimbolos, false));
+                    }
+
+                    @Override
+                    public void onMovimiento(int turnoActual,
+                                             com.mycompany.simulador.model.ecosystem.Coordenada origen,
+                                             com.mycompany.simulador.model.ecosystem.Coordenada destino,
+                                             boolean comio,
+                                             boolean esDepredador,
+                                             char[][] matrizPaso) {
+                        Platform.runLater(() -> view.mostrarMovimiento(origen, destino, esDepredador, comio, matrizPaso));
+                    }
+
+                    @Override
+                    public void onEventos(int turnoActual, java.util.List<com.mycompany.simulador.services.simulacion.TurnoEvento> eventos) {
+                        Platform.runLater(() -> view.mostrarEventos(eventos));
+                    }
+                }
         );
         resultados.add(r);
     }

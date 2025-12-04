@@ -47,6 +47,7 @@ C:\Users\USER\Desktop\simEco\simulador\src\main\java\com\mycompany\simulador\mod
 C:\Users\USER\Desktop\simEco\simulador\src\main\java\com\mycompany\simulador\controller\MenuInicioController.java
 C:\Users\USER\Desktop\simEco\simulador\src\main\java\com\mycompany\simulador\utils\VentanaUtils.java
 C:\Users\USER\Desktop\simEco\simulador\src\main\java\com\mycompany\simulador\interfaces\IReporteService.java
+C:\Users\USER\Desktop\simEco\simulador\src\main\java\com\mycompany\simulador\services\simulacion\TurnoEvento.java
 C:\Users\USER\Desktop\simEco\simulador\src\main\java\com\mycompany\simulador\interfaces\IEcosistemaRepository.java
 C:\Users\USER\Desktop\simEco\simulador\src\main\java\com\mycompany\simulador\utils\AleatorioUtils.java
 C:\Users\USER\Desktop\simEco\simulador\src\main\java\com\mycompany\simulador\view\DialogoConfirmacion.java

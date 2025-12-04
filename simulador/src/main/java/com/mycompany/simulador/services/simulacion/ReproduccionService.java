@@ -16,10 +16,45 @@ import com.mycompany.simulador.utils.SimLogger;
 
 public class ReproduccionService implements IReproduccionStrategy {
 
+    private java.util.function.Consumer<String> logCallback;
+    private java.util.function.Consumer<com.mycompany.simulador.services.simulacion.TurnoEvento> eventoCallback;
+
+    public void setLogCallback(java.util.function.Consumer<String> cb) {
+        this.logCallback = cb;
+    }
+
+    public void setEventoCallback(java.util.function.Consumer<com.mycompany.simulador.services.simulacion.TurnoEvento> cb) {
+        this.eventoCallback = cb;
+    }
+
     @Override
     public void reproducir(Ecosistema e) {
-        // Reproducción deshabilitada para que cada turno solo cambie una pieza (el movimiento).
-        // Esto evita que aparezcan nuevas presas/depredadores sobre elementos del escenario.
+        boolean creadoEnTurno = false;
+        List<Celda> snapshot = new ArrayList<>();
+        for (Celda[] fila : e.getMatriz()) {
+            for (Celda c : fila) {
+                if (!c.estaVacia()) snapshot.add(c);
+            }
+        }
+        for (Celda c : snapshot) {
+            if (creadoEnTurno) break;
+            Especie esp = c.getEspecie();
+            if (esp == null || !esp.isViva()) continue;
+            if (esp instanceof Presa &&
+                esp.getTurnosSobrevividos() >= Constantes.TURNOS_SOBREVIVIR_REPRO_PRESA) {
+                boolean creado = reproducirEnVecinoVacio(e, c, new Presa("Presa"), "Presa");
+                if (creado) {
+                    esp.reiniciarTurnosSobrevividos();
+                    creadoEnTurno = true;
+                }
+            } else if (esp instanceof Depredador &&
+                    esp.haComidoRecientemente(Constantes.VENTANA_TURNOS_REPRO_DEPREDADOR)) {
+                boolean creadoDep = reproducirEnVecinoVacio(e, c, new Depredador("Depredador"), "Depredador");
+                if (creadoDep) {
+                    creadoEnTurno = true;
+                }
+            }
+        }
     }
 
     private boolean reproducirEnVecinoVacio(Ecosistema e, Celda origen, Especie cria, String tipo) {
@@ -29,17 +64,32 @@ public class ReproduccionService implements IReproduccionStrategy {
             if (c.estaVacia()) libres.add(c);
         }
         if (libres.isEmpty()) {
-            SimLogger.log(tipo + " en " + coord(origen) + " intenta reproducirse, pero no hay espacio libre");
+            log(tipo + " en " + coord(origen) + " intenta reproducirse, pero no hay espacio libre");
             return false;
         }
         Celda destino = AleatorioUtils.elegirAleatorio(libres);
         destino.setEspecie(cria);
         cria.setPosicion(destino.getCoordenada());
-        SimLogger.log(tipo + " en " + coord(origen) + " se reproduce en " + coord(destino));
+        log(tipo + " en " + coord(origen) + " se reproduce en " + coord(destino));
+        notificarEvento(destino.getCoordenada(), com.mycompany.simulador.services.simulacion.TurnoEvento.Tipo.NACIMIENTO);
         return true;
     }
 
     private String coord(Celda c) {
         return "(" + c.getCoordenada().getFila() + "," + c.getCoordenada().getColumna() + ")";
+    }
+
+    private void log(String msg) {
+        SimLogger.log(msg);
+        if (logCallback != null) {
+            logCallback.accept(msg);
+        }
+    }
+
+    private void notificarEvento(com.mycompany.simulador.model.ecosystem.Coordenada coord,
+                                 com.mycompany.simulador.services.simulacion.TurnoEvento.Tipo tipo) {
+        if (eventoCallback != null && coord != null) {
+            eventoCallback.accept(new com.mycompany.simulador.services.simulacion.TurnoEvento(coord, tipo));
+        }
     }
 }

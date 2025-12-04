@@ -1,27 +1,49 @@
 package com.mycompany.simulador.services.simulacion;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.function.Consumer;
 
 import com.mycompany.simulador.config.Constantes;
 import com.mycompany.simulador.interfaces.IMovimientosStrategy;
 import com.mycompany.simulador.model.ecosystem.Celda;
+import com.mycompany.simulador.model.ecosystem.Coordenada;
 import com.mycompany.simulador.model.ecosystem.Ecosistema;
 import com.mycompany.simulador.model.species.Depredador;
 import com.mycompany.simulador.model.species.Especie;
-import com.mycompany.simulador.model.species.Presa;
 import com.mycompany.simulador.model.species.TerceraEspecie;
+import com.mycompany.simulador.services.simulacion.TurnoEvento;
 import com.mycompany.simulador.utils.AleatorioUtils;
 import com.mycompany.simulador.utils.MatrizUtils;
 import com.mycompany.simulador.utils.SimLogger;
-import java.util.function.Consumer;
 
 public class MovimientosService implements IMovimientosStrategy {
 
-    private Consumer<Ecosistema> stepCallback;
+    private Consumer<MovimientoPaso> stepCallback;
     private Consumer<String> logCallback;
+    private Consumer<TurnoEvento> eventoCallback;
+    private Movimiento ultimoMovimiento;
 
-    public void setStepCallback(Consumer<Ecosistema> callback) {
+    public record Movimiento(com.mycompany.simulador.model.ecosystem.Coordenada origen,
+                             com.mycompany.simulador.model.ecosystem.Coordenada destino,
+                             boolean comio,
+                             boolean esDepredador,
+                             boolean murioPorHambre) { }
+
+    public record MovimientoPaso(Coordenada origen,
+                                 Coordenada destino,
+                                 boolean comio,
+                                 boolean esDepredador,
+                                 boolean preparacion) { }
+
+    private record CaminoSeleccion(Celda origen, List<Coordenada> camino) { }
+
+    public void setStepCallback(Consumer<MovimientoPaso> callback) {
         this.stepCallback = callback;
     }
 
@@ -29,142 +51,174 @@ public class MovimientosService implements IMovimientosStrategy {
         this.logCallback = callback;
     }
 
+    public void setEventoCallback(Consumer<TurnoEvento> cb) {
+        this.eventoCallback = cb;
+    }
+
     @Override
     public void moverEspecies(Ecosistema e) {
         moverEspecies(e, stepCallback);
     }
 
-    @Override
-    public void moverEspecies(Ecosistema e, Consumer<Ecosistema> stepCb) {
-        List<Celda> candidatos = new ArrayList<>();
-        List<Celda> depredadores = new ArrayList<>();
-        for (Celda[] fila : e.getMatriz()) {
-            for (Celda c : fila) {
-                Especie esp = c.getEspecie();
-                if (esp != null && esp.isViva() &&
-                        (esp instanceof Presa || esp instanceof Depredador || esp instanceof TerceraEspecie)) {
-                    if (esp instanceof Depredador || esp instanceof TerceraEspecie) {
-                        depredadores.add(c);
-                    } else {
-                        candidatos.add(c);
-                    }
-                }
-            }
-        }
-        // Incrementa supervivencia para todos los vivos
-        for (Celda c : candidatos) {
-            c.getEspecie().incrementarTurnosSobrevividos();
-        }
+    public void moverEspecies(Ecosistema e, Consumer<MovimientoPaso> stepCb) {
+        ultimoMovimiento = null;
+        List<Celda> depredadores = obtenerDepredadores(e);
         for (Celda c : depredadores) {
             c.getEspecie().incrementarTurnosSobrevividos();
         }
 
-        if (candidatos.isEmpty() && depredadores.isEmpty()) {
-            notificarPaso(e, stepCb);
+        CaminoSeleccion camino = elegirCaminoAPresa(e, depredadores);
+        if (camino == null) {
+            SimLogger.log("No hay depredadores con un camino disponible hacia presas.");
             return;
         }
 
-        Celda origen;
-        if (!depredadores.isEmpty()) {
-            origen = AleatorioUtils.elegirAleatorio(depredadores);
-        } else {
-            origen = AleatorioUtils.elegirAleatorio(candidatos);
-        }
+        Celda origen = camino.origen();
         Especie esp = origen.getEspecie();
         if (esp == null || !esp.isViva()) {
-            notificarPaso(e, stepCb);
             return;
         }
 
-        Celda destino = null;
-        boolean comio = false;
-        if (esp instanceof Presa) {
-            destino = moverPresa(e, origen);
-        } else if (esp instanceof Depredador || esp instanceof TerceraEspecie) {
-            var res = moverDepredadorLike(e, origen);
-            destino = res[0];
-            comio = res[1] != null;
-            if (!comio) {
-                esp.registrarAyuno();
-                if (esp.getTurnosSinComer() >= Constantes.MAX_TURNOS_SIN_COMER_DEPREDADOR) {
-                    SimLogger.log(describir(esp) + " muere por hambre en " + coord(destino != null ? destino : origen));
-                    if (destino != null) {
-                        destino.vaciar();
-                    } else {
-                        origen.vaciar();
-                    }
-                    destino = null;
+        boolean esDep = esDepredador(esp);
+
+        notificarPaso(stepCb, new MovimientoPaso(origen.getCoordenada(), null, false, esDep, true));
+        dormirPasoLento();
+
+        for (int i = 1; i < camino.camino().size(); i++) {
+            Coordenada destinoCoord = camino.camino().get(i);
+            Celda destino = e.getCelda(destinoCoord.getFila(), destinoCoord.getColumna());
+
+            boolean comio = !destino.estaVacia() && destino.getEspecie().getTipo() == Especie.Tipo.PRESA;
+            if (comio) {
+                notificarEvento(destino.getCoordenada(), TurnoEvento.Tipo.MUERTE);
+                if (destino.getEspecie() != null) {
+                    destino.getEspecie().setViva(false);
                 }
-            } else {
+            }
+
+            Celda origenAnterior = origen;
+            origenAnterior.setEspecie(null);
+            destino.setEspecie(esp);
+            esp.setPosicion(destino.getCoordenada());
+            esp.setViva(true);
+            if (comio) {
                 esp.registrarComida();
             }
-        }
 
-        if (destino != null) {
-            logMovimiento(esp, origen.getCoordenada(), destino.getCoordenada(), comio);
+            ultimoMovimiento = new Movimiento(
+                    origenAnterior.getCoordenada(),
+                    destino.getCoordenada(),
+                    comio,
+                    esDep,
+                    false
+            );
+            logMovimiento(esp, origenAnterior.getCoordenada(), destino.getCoordenada(), comio);
+            notificarPaso(stepCb, new MovimientoPaso(origenAnterior.getCoordenada(), destino.getCoordenada(), comio, esDep, false));
+            origen = destino;
+            dormirPasoLento();
         }
-        notificarPaso(e, stepCb);
     }
 
-    private Celda moverPresa(Ecosistema e, Celda origen) {
-        List<Celda> libres = new ArrayList<>();
-        for (var coord : MatrizUtils.vecinosOrtogonales(origen.getCoordenada())) {
-            Celda c = e.getCelda(coord.getFila(), coord.getColumna());
-            if (c.estaVacia()) libres.add(c);
-        }
-        if (libres.isEmpty()) {
-            SimLogger.log("Presa permanece en " + coord(origen) + " (sin celdas libres)");
-            return null;
-        }
-        Celda destino = AleatorioUtils.elegirAleatorio(libres);
-        destino.setEspecie(origen.getEspecie());
-        destino.getEspecie().setPosicion(destino.getCoordenada());
-        SimLogger.log("Presa se mueve de " + coord(origen) + " a " + coord(destino));
-        origen.vaciar();
-        return destino;
-    }
-
-    private Celda[] moverDepredadorLike(Ecosistema e, Celda origen) {
-        Especie dep = origen.getEspecie();
-        List<Celda> vecinos = new ArrayList<>();
-        for (var coord : MatrizUtils.vecinosOrtogonales(origen.getCoordenada())) {
-            vecinos.add(e.getCelda(coord.getFila(), coord.getColumna()));
-        }
-        Celda objetivoPresa = null;
-        for (Celda c : vecinos) {
-            if (!c.estaVacia() && c.getEspecie().getTipo() == Especie.Tipo.PRESA) {
-                objetivoPresa = c;
-                break;
+    private List<Celda> obtenerDepredadores(Ecosistema e) {
+        List<Celda> depredadores = new ArrayList<>();
+        for (Celda[] fila : e.getMatriz()) {
+            for (Celda c : fila) {
+                Especie esp = c.getEspecie();
+                if (esp != null && esp.isViva() && esDepredador(esp)) {
+                    depredadores.add(c);
+                }
             }
         }
-        if (objetivoPresa != null) {
-            objetivoPresa.setEspecie(dep);
-            dep.setPosicion(objetivoPresa.getCoordenada());
-            dep.reiniciarTurnosSinComer();
-            origen.vaciar();
-            dep.setComioEnVentana(true);
-            SimLogger.log(describir(dep) + " se mueve de " + coord(origen) + " a " + coord(objetivoPresa)
-                    + " y come una presa");
-            return new Celda[]{objetivoPresa, objetivoPresa};
-        }
-        List<Celda> libres = new ArrayList<>();
-        for (Celda c : vecinos) {
-            if (c.estaVacia()) libres.add(c);
-        }
-        if (libres.isEmpty()) {
-            SimLogger.log(describir(dep) + " queda en " + coord(origen) + " (sin movimiento posible)");
-            return new Celda[]{null, null};
-        }
-        Celda destino = AleatorioUtils.elegirAleatorio(libres);
-        destino.setEspecie(dep);
-        dep.setPosicion(destino.getCoordenada());
-        SimLogger.log(describir(dep) + " se mueve de " + coord(origen) + " a " + coord(destino));
-        origen.vaciar();
-        return new Celda[]{destino, null};
+        return depredadores;
     }
 
-    private String coord(Celda c) {
-        return "(" + c.getCoordenada().getFila() + "," + c.getCoordenada().getColumna() + ")";
+    private CaminoSeleccion elegirCaminoAPresa(Ecosistema e, List<Celda> depredadores) {
+        List<CaminoSeleccion> candidatos = new ArrayList<>();
+        for (Celda dep : depredadores) {
+            List<Coordenada> camino = calcularCaminoAPresa(e, dep);
+            if (camino.size() > 1) {
+                candidatos.add(new CaminoSeleccion(dep, camino));
+            }
+        }
+        if (candidatos.isEmpty()) {
+            return null;
+        }
+        int minimo = candidatos.stream()
+                .map(c -> c.camino().size())
+                .min(Comparator.naturalOrder())
+                .orElse(Integer.MAX_VALUE);
+        List<CaminoSeleccion> masCortos = candidatos.stream()
+                .filter(c -> c.camino().size() == minimo)
+                .toList();
+        return AleatorioUtils.elegirAleatorio(masCortos);
+    }
+
+    private List<Coordenada> calcularCaminoAPresa(Ecosistema e, Celda origen) {
+        boolean[][] visitado = new boolean[Constantes.MATRIZ_FILAS][Constantes.MATRIZ_COLUMNAS];
+        Map<Coordenada, Coordenada> padre = new HashMap<>();
+        Queue<Coordenada> queue = new ArrayDeque<>();
+
+        Coordenada inicio = origen.getCoordenada();
+        queue.add(inicio);
+        visitado[inicio.getFila()][inicio.getColumna()] = true;
+
+        Coordenada encontrada = null;
+
+        while (!queue.isEmpty()) {
+            Coordenada actual = queue.poll();
+            Celda celdaActual = e.getCelda(actual.getFila(), actual.getColumna());
+            if (!actual.equals(inicio)
+                    && !celdaActual.estaVacia()
+                    && celdaActual.getEspecie().getTipo() == Especie.Tipo.PRESA) {
+                encontrada = actual;
+                break;
+            }
+            for (Coordenada vecino : MatrizUtils.vecinosOrtogonales(actual)) {
+                if (visitado[vecino.getFila()][vecino.getColumna()]) continue;
+                Celda celdaVecina = e.getCelda(vecino.getFila(), vecino.getColumna());
+                if (esTransitableParaDepredador(celdaVecina)) {
+                    padre.put(vecino, actual);
+                    visitado[vecino.getFila()][vecino.getColumna()] = true;
+                    queue.add(vecino);
+                }
+            }
+        }
+
+        if (encontrada == null) {
+            return List.of();
+        }
+
+        List<Coordenada> camino = new ArrayList<>();
+        Coordenada cursor = encontrada;
+        while (cursor != null) {
+            camino.add(cursor);
+            cursor = padre.get(cursor);
+        }
+        java.util.Collections.reverse(camino);
+        return camino;
+    }
+
+    private boolean esTransitableParaDepredador(Celda celda) {
+        if (celda == null) return false;
+        if (celda.estaVacia()) return true;
+        Especie esp = celda.getEspecie();
+        return esp != null && esp.getTipo() == Especie.Tipo.PRESA;
+    }
+
+    private boolean esDepredador(Especie esp) {
+        return esp instanceof Depredador || esp instanceof TerceraEspecie;
+    }
+
+    private void notificarPaso(Consumer<MovimientoPaso> cb, MovimientoPaso paso) {
+        if (cb != null && paso != null) {
+            cb.accept(paso);
+        }
+    }
+
+    private void dormirPasoLento() {
+        try {
+            Thread.sleep(Constantes.DELAY_PASO_MS);
+        } catch (InterruptedException ignored) { }
     }
 
     private String describir(Especie esp) {
@@ -173,18 +227,22 @@ public class MovimientosService implements IMovimientosStrategy {
         return "Especie";
     }
 
-    private void notificarPaso(Ecosistema e, Consumer<Ecosistema> stepCb) {
-        if (stepCb != null) {
-            stepCb.accept(e);
-        }
-    }
-
     private void logMovimiento(Especie esp, com.mycompany.simulador.model.ecosystem.Coordenada origen,
                                com.mycompany.simulador.model.ecosystem.Coordenada destino, boolean comio) {
         if (logCallback == null) return;
         String tipo = describir(esp);
         String msg = "Movimiento: " + tipo + " de (" + origen.getFila() + "," + origen.getColumna() + ") a ("
-                + destino.getFila() + "," + destino.getColumna() + ")" + (comio ? " (comió)" : "");
+                + destino.getFila() + "," + destino.getColumna() + ")" + (comio ? " (comio)" : "");
         logCallback.accept(msg);
+    }
+
+    public Movimiento getUltimoMovimiento() {
+        return ultimoMovimiento;
+    }
+
+    private void notificarEvento(com.mycompany.simulador.model.ecosystem.Coordenada coord, TurnoEvento.Tipo tipo) {
+        if (eventoCallback != null && coord != null) {
+            eventoCallback.accept(new TurnoEvento(coord, tipo));
+        }
     }
 }

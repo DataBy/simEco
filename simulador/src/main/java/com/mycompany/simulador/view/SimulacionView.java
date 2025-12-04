@@ -24,15 +24,20 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Screen; // <-- NUEVO IMPORT
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
 
 import com.mycompany.simulador.utils.AleatorioUtils;
+import com.mycompany.simulador.model.ecosystem.Coordenada;
+import com.mycompany.simulador.services.simulacion.TurnoEvento;
 
 public class SimulacionView {
 
@@ -63,6 +68,8 @@ public class SimulacionView {
     // Celdas de la matriz
     private final ImageView[][] matrizCeldas =
             new ImageView[Constantes.MATRIZ_FILAS][Constantes.MATRIZ_COLUMNAS];
+    private final StackPane[][] cellWrappers =
+            new StackPane[Constantes.MATRIZ_FILAS][Constantes.MATRIZ_COLUMNAS];
 
     // Tamaño dinámico de cada celda del grid
     private final DoubleProperty cellSize =
@@ -262,8 +269,12 @@ public class SimulacionView {
                 iv.fitWidthProperty().bind(cellSize);
                 iv.fitHeightProperty().bind(cellSize);
 
+                StackPane wrapper = new StackPane(iv);
+                wrapper.setStyle("-fx-border-color: transparent; -fx-border-width: 0; -fx-border-radius: 6; -fx-background-radius: 6;");
+
+                cellWrappers[i][j] = wrapper;
                 matrizCeldas[i][j] = iv;
-                grid.add(iv, j, i);
+                grid.add(wrapper, j, i);
             }
         }
 
@@ -467,9 +478,51 @@ public class SimulacionView {
     }
 
     public void actualizarMatriz(char[][] simbolos) {
+        actualizarMatriz(simbolos, false);
+    }
+
+    public void actualizarMatriz(char[][] simbolos, boolean limpiarResaltado) {
+        if (limpiarResaltado) {
+            limpiarResaltado();
+        }
         matrizBase = normalizar(simbolos);
-        moverMutacionesLibres();
         pintarMatriz(matrizBase);
+    }
+
+    public void mostrarMovimiento(Coordenada origen, Coordenada destino, boolean esDepredador, boolean comio, char[][] matriz) {
+        if (matriz != null) {
+            actualizarMatriz(matriz, false);
+        }
+        if (!esDepredador || origen == null) {
+            return;
+        }
+        limpiarResaltado();
+
+        double duracionSegundos = Math.max(2.5, (Constantes.DELAY_PASO_MS / 1000.0) + 0.4);
+
+        // Preparacion: resalte previo para guiar al ojo antes de mover
+        if (destino == null) {
+            resaltarTemporal(origen.getFila(), origen.getColumna(), "#ff0000", duracionSegundos);
+            return;
+        }
+
+        String color = comio ? "#ff0000" : "#ff6f61";
+        resaltarTemporal(origen.getFila(), origen.getColumna(), color, duracionSegundos);
+        resaltarTemporal(destino.getFila(), destino.getColumna(), color, duracionSegundos);
+    }
+
+    public void mostrarEventos(java.util.List<TurnoEvento> eventos) {
+        if (eventos == null) return;
+        for (TurnoEvento ev : eventos) {
+            if (ev == null || ev.coordenada() == null) continue;
+            int f = ev.coordenada().getFila();
+            int c = ev.coordenada().getColumna();
+            if (ev.tipo() == TurnoEvento.Tipo.NACIMIENTO) {
+                resaltarTemporal(f, c, "#2ecc71", 2.5);
+            } else if (ev.tipo() == TurnoEvento.Tipo.MUERTE) {
+                resaltarTemporal(f, c, "#000000", 2.5);
+            }
+        }
     }
 
     public void mostrarEscenarioAleatorio() {
@@ -579,20 +632,7 @@ public class SimulacionView {
     }
 
     private void moverMutacionesLibres() {
-        if (mutaciones.isEmpty()) return;
-        List<int[]> nuevas = new ArrayList<>();
-        Set<String> ocupadas = new HashSet<>();
-        for (int[] m : mutaciones) {
-            int f = AleatorioUtils.enteroEnRango(0, Constantes.MATRIZ_FILAS - 1);
-            int c = AleatorioUtils.enteroEnRango(0, Constantes.MATRIZ_COLUMNAS - 1);
-            if (matrizBase != null && matrizBase[f][c] != 'E') continue; // no sobre-especies ni elementos ocupados
-            String key = f + "-" + c;
-            if (ocupadas.add(key)) {
-                nuevas.add(new int[]{f, c});
-            }
-        }
-        mutaciones.clear();
-        mutaciones.addAll(nuevas);
+        // Mutaciones estáticas: no se mueven solas entre ticks
     }
 
     private void pintarMatriz(char[][] base) {
@@ -733,6 +773,27 @@ public class SimulacionView {
             for (int j = 0; j < Constantes.MATRIZ_COLUMNAS; j++) {
                 simboloCache[i][j] = '\0';
                 iconCache[i][j] = null;
+            }
+        }
+    }
+
+    private void resaltarTemporal(int fila, int col, String colorHex, double segundos) {
+        if (fila < 0 || col < 0 || fila >= Constantes.MATRIZ_FILAS || col >= Constantes.MATRIZ_COLUMNAS) return;
+        StackPane wrapper = cellWrappers[fila][col];
+        if (wrapper == null) return;
+        wrapper.setStyle("-fx-border-color: " + colorHex + "; -fx-border-width: 3; -fx-border-radius: 6; -fx-background-radius: 6;");
+        Timeline tl = new Timeline(new KeyFrame(Duration.seconds(segundos), e -> wrapper.setStyle("-fx-border-color: transparent; -fx-border-width: 0; -fx-border-radius: 6; -fx-background-radius: 6;")));
+        tl.setCycleCount(1);
+        tl.play();
+    }
+
+    private void limpiarResaltado() {
+        for (int i = 0; i < Constantes.MATRIZ_FILAS; i++) {
+            for (int j = 0; j < Constantes.MATRIZ_COLUMNAS; j++) {
+                StackPane w = cellWrappers[i][j];
+                if (w != null) {
+                    w.setStyle("-fx-border-color: transparent; -fx-border-width: 0; -fx-border-radius: 6; -fx-background-radius: 6;");
+                }
             }
         }
     }
