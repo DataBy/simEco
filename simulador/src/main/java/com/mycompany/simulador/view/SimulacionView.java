@@ -490,6 +490,23 @@ public class SimulacionView {
     }
 
     public void mostrarMovimiento(Coordenada origen, Coordenada destino, boolean esDepredador, boolean comio, char[][] matriz) {
+        if (esDepredador && origen != null && destino != null && matriz != null) {
+            int of = origen.getFila();
+            int oc = origen.getColumna();
+            int df = destino.getFila();
+            int dc = destino.getColumna();
+            if (of >= 0 && oc >= 0 && of < Constantes.MATRIZ_FILAS && oc < Constantes.MATRIZ_COLUMNAS
+                    && df >= 0 && dc >= 0 && df < Constantes.MATRIZ_FILAS && dc < Constantes.MATRIZ_COLUMNAS) {
+                String iconAnterior = iconCache[of][oc];
+                char simboloDestino = matriz[df][dc];
+                if (iconAnterior != null) {
+                    iconCache[df][dc] = iconAnterior;   // conserva el mismo depredador
+                    simboloCache[df][dc] = simboloDestino;
+                    iconCache[of][oc] = null;
+                    simboloCache[of][oc] = '\0';
+                }
+            }
+        }
         if (matriz != null) {
             actualizarMatriz(matriz, false);
         }
