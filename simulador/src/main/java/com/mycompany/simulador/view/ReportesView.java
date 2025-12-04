@@ -1,7 +1,6 @@
 package com.mycompany.simulador.view;
 
 import com.mycompany.simulador.services.reportes.GraficosService;
-
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -21,6 +20,7 @@ public class ReportesView {
     private final VBox panelGraficoPoblaciones = new VBox();
     private final VBox panelGraficoOcupacion = new VBox();
     private final Button btnGenerarPdfYEnviar = new Button("Generar PDF y enviar por correo");
+    private static final double PANEL_GRAF_WIDTH = 340;
 
     public ReportesView() {
         construirLayout();
@@ -32,11 +32,14 @@ public class ReportesView {
         top.setAlignment(Pos.CENTER_LEFT);
         top.getChildren().addAll(
                 new Label("Total de turnos:"), lblTotalTurnos,
-                new Label("Turno de extinción:"), lblTurnoExtincion
+                new Label("Turno de extincion:"), lblTurnoExtincion
         );
 
-        HBox center = new HBox(10, panelGraficoPoblaciones, panelGraficoOcupacion);
-        center.setPadding(new Insets(10));
+        configurarPanelGrafico(panelGraficoPoblaciones);
+        configurarPanelGrafico(panelGraficoOcupacion);
+
+        HBox center = new HBox(30, panelGraficoPoblaciones, panelGraficoOcupacion);
+        center.setPadding(new Insets(20));
         center.setAlignment(Pos.CENTER);
         HBox.setHgrow(panelGraficoPoblaciones, Priority.ALWAYS);
         HBox.setHgrow(panelGraficoOcupacion, Priority.ALWAYS);
@@ -52,14 +55,14 @@ public class ReportesView {
 
     public Parent getRoot() { return root; }
 
-    public void actualizarDatos(int totalTurnos, int presas, int depredadores,
+    public void actualizarDatos(int totalTurnos, int presas, int depredadores, int terceras,
                                 int turnoExtincion, int ocupadas, int vacias) {
         lblTotalTurnos.setText(String.valueOf(totalTurnos));
         lblTurnoExtincion.setText(turnoExtincion < 0 ? "N/A" : String.valueOf(turnoExtincion));
 
         GraficosService g = new GraficosService();
         panelGraficoPoblaciones.getChildren().setAll(
-                g.crearGraficoPastel(presas, depredadores, "Presas", "Depredadores")
+                g.crearGraficoPoblaciones(presas, depredadores, terceras)
         );
         panelGraficoOcupacion.getChildren().setAll(
                 g.crearGraficoOcupacion(ocupadas, vacias)
@@ -68,5 +71,14 @@ public class ReportesView {
 
     public void setOnGenerarPdfYEnviar(Runnable r) {
         btnGenerarPdfYEnviar.setOnAction(e -> r.run());
+    }
+
+    private void configurarPanelGrafico(VBox panel) {
+        panel.setSpacing(10);
+        panel.setAlignment(Pos.CENTER);
+        panel.setFillWidth(false);
+        panel.setPadding(new Insets(10));
+        panel.setMinWidth(PANEL_GRAF_WIDTH);
+        panel.setPrefWidth(PANEL_GRAF_WIDTH);
     }
 }

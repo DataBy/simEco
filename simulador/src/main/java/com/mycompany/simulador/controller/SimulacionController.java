@@ -112,21 +112,22 @@ public class SimulacionController {
             ejecutarEscenario("INVIERNO", base.getMaxTurnos(),
                     RutasArchivos.ICON_ELEMENTO_LAGO, resultados);
 
-            Platform.runLater(() -> mostrarReportes(resultados, base.getMaxTurnos()));
+            Platform.runLater(() -> mostrarReportes(resultados));
         });
 
         hilo.setDaemon(true);
         hilo.start();
     }
 
-    private void mostrarReportes(List<ReporteFinal> reportes, int turnosPorEscenario) {
+    private void mostrarReportes(List<ReporteFinal> reportes) {
         ResumenView rView = new ResumenView();
         Scene scene = new Scene(rView.getRoot(), stage.getWidth(), stage.getHeight());
         stage.setScene(scene);
 
-        int totalTurnos = turnosPorEscenario * reportes.size();
+        int totalTurnos = reportes.stream().mapToInt(ReporteFinal::getTotalTurnos).sum();
         int presasFinales = reportes.stream().mapToInt(ReporteFinal::getPresasFinales).sum();
         int depredadoresFinales = reportes.stream().mapToInt(ReporteFinal::getDepredadoresFinales).sum();
+        int tercerasFinales = reportes.stream().mapToInt(ReporteFinal::getTerceraEspecieFinal).sum();
         int turnoExtincion = reportes.stream()
                 .mapToInt(ReporteFinal::getTurnoExtincion)
                 .filter(v -> v >= 0)
@@ -144,6 +145,7 @@ public class SimulacionController {
                 totalTurnos,
                 presasFinales,
                 depredadoresFinales,
+                tercerasFinales,
                 turnoExtincion,
                 ocupadas, vacias
         );

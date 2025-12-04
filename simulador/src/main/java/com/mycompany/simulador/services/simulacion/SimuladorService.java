@@ -47,8 +47,10 @@ public class SimuladorService implements ISimulador {
         ReporteFinal reporteFinal = new ReporteFinal();
         int turnoExtincion = -1;
         java.util.List<TurnoEvento> eventosTurno = new java.util.ArrayList<>();
+        int turnosEjecutados = 0;
 
         for (int turno = 1; turno <= config.getMaxTurnos(); turno++) {
+            turnosEjecutados = turno;
             int turnoActual = turno;
             movimientosStrategy.setLogCallback(m -> {
                 logEvent(m);
@@ -111,7 +113,7 @@ public class SimuladorService implements ISimulador {
         }
 
         Turno ultimo = ecosistemaService.calcularTurno(0, e);
-        reporteFinal.setTotalTurnos(config.getMaxTurnos());
+        reporteFinal.setTotalTurnos(turnosEjecutados);
         reporteFinal.setPresasFinales(ultimo.getPresas());
         reporteFinal.setDepredadoresFinales(ultimo.getDepredadores());
         reporteFinal.setTerceraEspecieFinal(ultimo.getTerceraEspecie());
