@@ -62,6 +62,7 @@ public class MovimientosService implements IMovimientosStrategy {
 
     public void moverEspecies(Ecosistema e, Consumer<MovimientoPaso> stepCb) {
         ultimoMovimiento = null;
+        moverUnaPresa(e, stepCb);
         List<Celda> depredadores = obtenerDepredadores(e);
         for (Celda c : depredadores) {
             c.getEspecie().incrementarTurnosSobrevividos();
@@ -203,6 +204,48 @@ public class MovimientosService implements IMovimientosStrategy {
         if (celda.estaVacia()) return true;
         Especie esp = celda.getEspecie();
         return esp != null && esp.getTipo() == Especie.Tipo.PRESA;
+    }
+
+    private void moverUnaPresa(Ecosistema e, Consumer<MovimientoPaso> stepCb) {
+        List<Celda> presas = new ArrayList<>();
+        for (Celda[] fila : e.getMatriz()) {
+            for (Celda c : fila) {
+                Especie esp = c.getEspecie();
+                if (esp != null && esp.isViva() && esp.getTipo() == Especie.Tipo.PRESA) {
+                    List<Coordenada> vecinos = MatrizUtils.vecinosOrtogonales(c.getCoordenada());
+                    boolean tieneVacio = vecinos.stream()
+                            .anyMatch(coord -> e.getCelda(coord.getFila(), coord.getColumna()).estaVacia());
+                    if (tieneVacio) {
+                        presas.add(c);
+                    }
+                }
+            }
+        }
+        if (presas.isEmpty()) return;
+
+        Celda origen = AleatorioUtils.elegirAleatorio(presas);
+        List<Coordenada> vacios = new ArrayList<>();
+        for (Coordenada v : MatrizUtils.vecinosOrtogonales(origen.getCoordenada())) {
+            if (e.getCelda(v.getFila(), v.getColumna()).estaVacia()) {
+                vacios.add(v);
+            }
+        }
+        if (vacios.isEmpty()) return;
+
+        Coordenada destinoCoord = AleatorioUtils.elegirAleatorio(vacios);
+        Celda destino = e.getCelda(destinoCoord.getFila(), destinoCoord.getColumna());
+        Especie presa = origen.getEspecie();
+
+        // Aviso previo para resaltar qué presa se moverá
+        notificarPaso(stepCb, new MovimientoPaso(origen.getCoordenada(), null, false, false, true));
+
+        origen.setEspecie(null);
+        destino.setEspecie(presa);
+        if (presa != null) {
+            presa.setPosicion(destinoCoord);
+        }
+        // Aviso post-movimiento
+        notificarPaso(stepCb, new MovimientoPaso(origen.getCoordenada(), destinoCoord, false, false, false));
     }
 
     private boolean esDepredador(Especie esp) {

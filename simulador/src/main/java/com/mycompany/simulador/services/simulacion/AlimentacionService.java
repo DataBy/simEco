@@ -17,9 +17,20 @@ public class AlimentacionService implements IAlimentacionStrategy {
             for (Celda c : fila) {
                 Especie esp = c.getEspecie();
                 if (esp == null || !esp.isViva()) continue;
-                // Solo limpiamos la marca de "comió" para mantener estable el tablero:
-                // nada muere por hambre y nadie nace aquí, garantizando un único cambio por turno.
+
                 if (esp instanceof Depredador || esp instanceof TerceraEspecie) {
+                    boolean comioEsteTurno = esp.isComioEnVentana();
+                    if (comioEsteTurno) {
+                        esp.reiniciarTurnosSinComer();
+                    } else {
+                        esp.registrarAyuno();
+                        if (esp.getTurnosSinComer() >= Constantes.MAX_TURNOS_SIN_COMER_DEPREDADOR) {
+                            esp.setViva(false);
+                            c.setEspecie(null); // celda queda vacía
+                            SimLogger.log("Depredador muere por hambre en " + formatear(c));
+                            continue;
+                        }
+                    }
                     esp.setComioEnVentana(false);
                 }
             }

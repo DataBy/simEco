@@ -618,20 +618,23 @@ public class SimulacionView {
         if (matriz != null) {
             actualizarMatriz(matriz, false);
         }
-        if (!esDepredador || origen == null) {
+        if (origen == null) {
             return;
         }
         limpiarResaltado();
 
         double duracionSegundos = Math.max(2.5, (Constantes.DELAY_PASO_MS / 1000.0) + 0.4);
 
-        // Preparacion: resalte previo para guiar al ojo antes de mover
+        // Preparación: resalte previo para guiar al ojo antes de mover
         if (destino == null) {
-            resaltarTemporal(origen.getFila(), origen.getColumna(), "#ff0000", duracionSegundos);
+            String colorPrep = esDepredador ? "#ff0000" : "#2196f3";
+            resaltarTemporal(origen.getFila(), origen.getColumna(), colorPrep, duracionSegundos);
             return;
         }
 
-        String color = comio ? "#ff0000" : "#ff6f61";
+        String color = esDepredador
+                ? (comio ? "#ff0000" : "#ff6f61")
+                : "#2196f3";
         resaltarTemporal(origen.getFila(), origen.getColumna(), color, duracionSegundos);
         resaltarTemporal(destino.getFila(), destino.getColumna(), color, duracionSegundos);
     }

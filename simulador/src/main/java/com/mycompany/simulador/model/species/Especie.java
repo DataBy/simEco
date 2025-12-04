@@ -47,7 +47,7 @@ public abstract class Especie {
         this.turnosSinComer = 0;
         this.turnosDesdeUltimaComida = 0;
         this.haComidoAlgunaVez = true;
-        this.comioEnVentana = false;
+        this.comioEnVentana = true;
     }
 
     public void registrarAyuno() {
