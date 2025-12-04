@@ -3,6 +3,7 @@ package com.mycompany.simulador.services.simulacion;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.mycompany.simulador.config.Constantes;
 import com.mycompany.simulador.interfaces.IMovimientosStrategy;
 import com.mycompany.simulador.model.ecosystem.Celda;
 import com.mycompany.simulador.model.ecosystem.Ecosistema;
@@ -14,7 +15,6 @@ import com.mycompany.simulador.utils.AleatorioUtils;
 import com.mycompany.simulador.utils.MatrizUtils;
 import com.mycompany.simulador.utils.SimLogger;
 import java.util.function.Consumer;
-import java.util.Collections;
 
 public class MovimientosService implements IMovimientosStrategy {
 
@@ -37,12 +37,17 @@ public class MovimientosService implements IMovimientosStrategy {
     @Override
     public void moverEspecies(Ecosistema e, Consumer<Ecosistema> stepCb) {
         List<Celda> candidatos = new ArrayList<>();
+        List<Celda> depredadores = new ArrayList<>();
         for (Celda[] fila : e.getMatriz()) {
             for (Celda c : fila) {
                 Especie esp = c.getEspecie();
                 if (esp != null && esp.isViva() &&
                         (esp instanceof Presa || esp instanceof Depredador || esp instanceof TerceraEspecie)) {
-                    candidatos.add(c);
+                    if (esp instanceof Depredador || esp instanceof TerceraEspecie) {
+                        depredadores.add(c);
+                    } else {
+                        candidatos.add(c);
+                    }
                 }
             }
         }
@@ -50,13 +55,21 @@ public class MovimientosService implements IMovimientosStrategy {
         for (Celda c : candidatos) {
             c.getEspecie().incrementarTurnosSobrevividos();
         }
+        for (Celda c : depredadores) {
+            c.getEspecie().incrementarTurnosSobrevividos();
+        }
 
-        if (candidatos.isEmpty()) {
+        if (candidatos.isEmpty() && depredadores.isEmpty()) {
             notificarPaso(e, stepCb);
             return;
         }
 
-        Celda origen = AleatorioUtils.elegirAleatorio(candidatos);
+        Celda origen;
+        if (!depredadores.isEmpty()) {
+            origen = AleatorioUtils.elegirAleatorio(depredadores);
+        } else {
+            origen = AleatorioUtils.elegirAleatorio(candidatos);
+        }
         Especie esp = origen.getEspecie();
         if (esp == null || !esp.isViva()) {
             notificarPaso(e, stepCb);
@@ -71,6 +84,20 @@ public class MovimientosService implements IMovimientosStrategy {
             var res = moverDepredadorLike(e, origen);
             destino = res[0];
             comio = res[1] != null;
+            if (!comio) {
+                esp.registrarAyuno();
+                if (esp.getTurnosSinComer() >= Constantes.MAX_TURNOS_SIN_COMER_DEPREDADOR) {
+                    SimLogger.log(describir(esp) + " muere por hambre en " + coord(destino != null ? destino : origen));
+                    if (destino != null) {
+                        destino.vaciar();
+                    } else {
+                        origen.vaciar();
+                    }
+                    destino = null;
+                }
+            } else {
+                esp.registrarComida();
+            }
         }
 
         if (destino != null) {
@@ -113,6 +140,7 @@ public class MovimientosService implements IMovimientosStrategy {
         if (objetivoPresa != null) {
             objetivoPresa.setEspecie(dep);
             dep.setPosicion(objetivoPresa.getCoordenada());
+            dep.reiniciarTurnosSinComer();
             origen.vaciar();
             dep.setComioEnVentana(true);
             SimLogger.log(describir(dep) + " se mueve de " + coord(origen) + " a " + coord(objetivoPresa)

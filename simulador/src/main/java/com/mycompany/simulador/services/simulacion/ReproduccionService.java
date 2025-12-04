@@ -18,26 +18,8 @@ public class ReproduccionService implements IReproduccionStrategy {
 
     @Override
     public void reproducir(Ecosistema e) {
-        List<Celda> snapshot = new ArrayList<>();
-        for (Celda[] fila : e.getMatriz()) {
-            for (Celda c : fila) {
-                if (!c.estaVacia()) snapshot.add(c);
-            }
-        }
-        for (Celda c : snapshot) {
-            Especie esp = c.getEspecie();
-            if (esp == null || !esp.isViva()) continue;
-            if (esp instanceof Presa &&
-                esp.getTurnosSobrevividos() >= Constantes.TURNOS_SOBREVIVIR_REPRO_PRESA) {
-                boolean creado = reproducirEnVecinoVacio(e, c, new Presa("Presa"), "Presa");
-                if (creado) {
-                    esp.reiniciarTurnosSobrevividos();
-                }
-            } else if (esp instanceof Depredador &&
-                    esp.haComidoRecientemente(Constantes.VENTANA_TURNOS_REPRO_DEPREDADOR)) {
-                reproducirEnVecinoVacio(e, c, new Depredador("Depredador"), "Depredador");
-            }
-        }
+        // Reproducción deshabilitada para que cada turno solo cambie una pieza (el movimiento).
+        // Esto evita que aparezcan nuevas presas/depredadores sobre elementos del escenario.
     }
 
     private boolean reproducirEnVecinoVacio(Ecosistema e, Celda origen, Especie cria, String tipo) {

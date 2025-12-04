@@ -57,15 +57,6 @@ public class SimuladorService implements ISimulador {
             SimLogger.log("Turno " + turno + " - movimiento");
             movimientosStrategy.moverEspecies(e);
 
-            // Mostrar solo un refresh por tick tras el movimiento
-            if (listener != null) {
-                char[][] mPaso = ecosistemaService.construirMatrizSimbolos(e);
-                listener.onTurnoActualizado(turnoActual, mPaso);
-            }
-            try {
-                Thread.sleep(Constantes.DELAY_PASO_MS);
-            } catch (InterruptedException ignored) { }
-
             SimLogger.log("Turno " + turno + " - alimentacion");
             alimentacionStrategy.procesarAlimentacion(e);
             SimLogger.log("Turno " + turno + " - reproduccion");
@@ -80,6 +71,7 @@ public class SimuladorService implements ISimulador {
                     t.getCeldasOcupadas());
             estadoTurnosRepository.guardarEstado(dto, matrizSimbolos);
 
+            // Un solo refresh por tick: estado final del turno (solo un movimiento).
             if (listener != null) {
                 listener.onTurnoActualizado(turno, matrizSimbolos);
             }

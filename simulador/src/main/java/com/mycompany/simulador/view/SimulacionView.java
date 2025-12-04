@@ -67,6 +67,10 @@ public class SimulacionView {
     // Tamaño dinámico de cada celda del grid
     private final DoubleProperty cellSize =
             new SimpleDoubleProperty(Constantes.MATRIZ_TAM_CELDA);
+    private final String[][] iconCache =
+            new String[Constantes.MATRIZ_FILAS][Constantes.MATRIZ_COLUMNAS];
+    private final char[][] simboloCache =
+            new char[Constantes.MATRIZ_FILAS][Constantes.MATRIZ_COLUMNAS];
 
     private final List<String> iconosPresas = List.of(
             RutasArchivos.ICON_PRESA,
@@ -454,6 +458,7 @@ public class SimulacionView {
             this.tercerasBufalo.clear();
             this.matrizBase = matrizVacia();
         }
+        resetCacheIconos();
         pintarMatriz(matrizBase != null ? matrizBase : matrizVacia());
     }
 
@@ -580,6 +585,7 @@ public class SimulacionView {
         for (int[] m : mutaciones) {
             int f = AleatorioUtils.enteroEnRango(0, Constantes.MATRIZ_FILAS - 1);
             int c = AleatorioUtils.enteroEnRango(0, Constantes.MATRIZ_COLUMNAS - 1);
+            if (matrizBase != null && matrizBase[f][c] != 'E') continue; // no sobre-especies ni elementos ocupados
             String key = f + "-" + c;
             if (ocupadas.add(key)) {
                 nuevas.add(new int[]{f, c});
@@ -596,7 +602,11 @@ public class SimulacionView {
         for (int i = 0; i < Constantes.MATRIZ_FILAS; i++) {
             for (int j = 0; j < Constantes.MATRIZ_COLUMNAS; j++) {
                 char simbolo = simboloParaRender(render, i, j);
-                String ruta = rutaParaSimbolo(simbolo, i, j);
+                if (simboloCache[i][j] != simbolo || iconCache[i][j] == null) {
+                    simboloCache[i][j] = simbolo;
+                    iconCache[i][j] = rutaParaSimbolo(simbolo, i, j);
+                }
+                String ruta = iconCache[i][j];
                 var img = IconosUtils.cargarImagen(ruta != null ? ruta : RutasArchivos.ICON_ELEMENTO_PASTO_VERDE);
                 if (img == null) {
                     img = IconosUtils.cargarImagen(RutasArchivos.ICON_ELEMENTO_PASTO_VERDE);
@@ -671,7 +681,7 @@ public class SimulacionView {
         List<int[]> libres = new ArrayList<>();
         for (int i = 0; i < Constantes.MATRIZ_FILAS; i++) {
             for (int j = 0; j < Constantes.MATRIZ_COLUMNAS; j++) {
-                if (!esMutacion(i, j)) {
+                if (!esMutacion(i, j) && (matrizBase == null || matrizBase[i][j] == 'E')) {
                     libres.add(new int[]{i, j});
                 }
             }
@@ -716,5 +726,14 @@ public class SimulacionView {
             }
         }
         return copia;
+    }
+
+    private void resetCacheIconos() {
+        for (int i = 0; i < Constantes.MATRIZ_FILAS; i++) {
+            for (int j = 0; j < Constantes.MATRIZ_COLUMNAS; j++) {
+                simboloCache[i][j] = '\0';
+                iconCache[i][j] = null;
+            }
+        }
     }
 }
