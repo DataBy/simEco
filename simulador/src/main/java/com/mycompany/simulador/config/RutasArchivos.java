@@ -102,6 +102,8 @@ public final class RutasArchivos {
             BASE + "/uiSimulacion/menuDerecha/logo.png";
     public static final String SIM_MENU_DER_TIGRE_SENTADO =
             BASE + "/uiSimulacion/menuDerecha/tigreSentado.png";
+    public static final String SIM_ARBOL_SABANA =
+            BASE + "/uiSimulacion/imagenesGenerales/arbol.png";
 
     // =====================================================
     // SIMULACIÓN: ESCENARIO CENTRAL

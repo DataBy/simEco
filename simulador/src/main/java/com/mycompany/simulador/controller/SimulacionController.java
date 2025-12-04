@@ -161,6 +161,7 @@ public class SimulacionController {
         java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
         Platform.runLater(() -> {
             view.setElementosUnicosSinReset(elemento);
+            view.prepararTiempoSabanero(nombre);
             latch.countDown();
         });
         try {
@@ -172,7 +173,10 @@ public class SimulacionController {
                 new ISimulador.SimulacionListener() {
                     @Override
                     public void onTurnoActualizado(int turnoActual, char[][] matrizSimbolos) {
-                        Platform.runLater(() -> view.actualizarMatriz(matrizSimbolos, false));
+                        Platform.runLater(() -> {
+                            view.actualizarTiempoSabanero(turnoActual, nombre);
+                            view.actualizarMatriz(matrizSimbolos, false);
+                        });
                     }
 
                     @Override

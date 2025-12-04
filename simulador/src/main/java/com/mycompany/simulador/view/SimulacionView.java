@@ -24,6 +24,7 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -64,6 +65,9 @@ public class SimulacionView {
 
     // Historial
     private final TextArea txtHistorial = new TextArea();
+    private final Label lblTiempoTurno = new Label("Turno 0");
+    private final Label lblTiempoDia = new Label("Dia 0");
+    private final Label lblTiempoEstacion = new Label("Estacion: --");
 
     // Celdas de la matriz
     private final ImageView[][] matrizCeldas =
@@ -112,6 +116,7 @@ public class SimulacionView {
     public SimulacionView() {
         construirUI();
         inicializarEstadoInteractivo();
+        prepararTiempoSabanero("--");
     }
 
     private void construirUI() {
@@ -221,6 +226,7 @@ public class SimulacionView {
         VBox contDer = new VBox(15);
         contDer.setPadding(new Insets(100, 24, 40, 24));
         contDer.setAlignment(Pos.TOP_CENTER);
+        contDer.setFillWidth(true);
 
         Label lblHist = new Label("Historial de la Simulación");
         lblHist.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #235217;");
@@ -243,7 +249,12 @@ public class SimulacionView {
         panelHistorial.getChildren().add(txtHistorial);
         panelHistorial.setFillWidth(true);
 
-        contDer.getChildren().addAll(lblHist, panelHistorial);
+        HBox tiempoSabanero = crearPanelTiempoSabanero();
+        tiempoSabanero.setAlignment(Pos.CENTER_RIGHT);
+        tiempoSabanero.setMaxWidth(Double.MAX_VALUE);
+        VBox.setMargin(tiempoSabanero, new Insets(8, 0, 0, 0));
+
+        contDer.getChildren().addAll(lblHist, panelHistorial, tiempoSabanero);
         panelDer.getChildren().addAll(fondoDer, contDer);
 
         // ======================================================
@@ -382,6 +393,103 @@ public class SimulacionView {
         v.setEffect(sombra);
 
         return v;
+    }
+
+    // ----------------------------------------------------------
+    // Panel "Tiempo Sabanero"
+    // ----------------------------------------------------------
+    private HBox crearPanelTiempoSabanero() {
+        HBox cont = new HBox(8);
+        cont.setAlignment(Pos.CENTER_LEFT);
+        cont.setMouseTransparent(true);
+        cont.setPickOnBounds(false);
+        cont.setFillHeight(false);
+
+        VBox tarjeta = new VBox(6);
+        tarjeta.setAlignment(Pos.TOP_LEFT);
+        tarjeta.setPadding(new Insets(10, 12, 12, 12));
+        tarjeta.setMinWidth(200);
+        tarjeta.setMaxWidth(240);
+        tarjeta.setStyle("""
+            -fx-background-color: rgba(255,255,255,0.24);
+            -fx-background-radius: 16;
+            -fx-border-radius: 16;
+            -fx-border-color: rgba(255,255,255,0.55);
+            -fx-border-width: 1.2;
+        """);
+
+        DropShadow sombra = new DropShadow();
+        sombra.setColor(Color.rgb(0, 0, 0, 0.14));
+        sombra.setRadius(10);
+        sombra.setOffsetY(2);
+        tarjeta.setEffect(sombra);
+
+        Label titulo = new Label("Tiempo Sabanero");
+        titulo.setStyle("-fx-text-fill: #1e4c28; -fx-font-size: 17px; -fx-font-weight: bold;");
+
+        Label lblTurnoTitulo = new Label("Turno:");
+        lblTurnoTitulo.setStyle("-fx-text-fill: #1e4c28; -fx-font-size: 12px; -fx-font-weight: bold;");
+        lblTiempoTurno.setStyle("-fx-text-fill: #235217; -fx-font-size: 15px; -fx-font-weight: bold;");
+        HBox filaTurno = new HBox(6, lblTurnoTitulo, lblTiempoTurno);
+        filaTurno.setAlignment(Pos.CENTER_LEFT);
+
+        Label lblDiaTitulo = new Label("Dia:");
+        lblDiaTitulo.setStyle("-fx-text-fill: #1e4c28; -fx-font-size: 12px; -fx-font-weight: bold;");
+        lblTiempoDia.setStyle("-fx-text-fill: #235217; -fx-font-size: 15px; -fx-font-weight: bold;");
+        HBox filaDia = new HBox(6, lblDiaTitulo, lblTiempoDia);
+        filaDia.setAlignment(Pos.CENTER_LEFT);
+
+        lblTiempoEstacion.setStyle("""
+            -fx-text-fill: #1e4c28;
+            -fx-font-size: 13px;
+            -fx-font-weight: bold;
+            -fx-background-color: rgba(255,255,255,0.32);
+            -fx-background-radius: 10;
+            -fx-padding: 5 10 5 10;
+        """);
+
+        tarjeta.getChildren().addAll(titulo, filaTurno, filaDia, lblTiempoEstacion);
+
+        ImageView arbol = new ImageView(IconosUtils.cargarImagen(RutasArchivos.SIM_ARBOL_SABANA));
+        if (arbol.getImage() != null) {
+            arbol.setPreserveRatio(true);
+            arbol.setFitHeight(90);
+            arbol.setOpacity(0.88);
+        } else {
+            arbol.setVisible(false);
+        }
+
+        cont.getChildren().addAll(tarjeta, arbol);
+        return cont;
+    }
+
+    public void prepararTiempoSabanero(String estacion) {
+        String est = formatearEstacion(estacion);
+        lblTiempoTurno.setText("Turno 0");
+        lblTiempoDia.setText("Dia 0");
+        lblTiempoEstacion.setText("Estacion: " + est);
+    }
+
+    public void actualizarTiempoSabanero(int turno, String estacion) {
+        String est = formatearEstacion(estacion);
+        lblTiempoTurno.setText("Turno " + turno);
+        lblTiempoDia.setText("Dia " + turno);
+        lblTiempoEstacion.setText("Estacion: " + est);
+    }
+
+    private String formatearEstacion(String estacion) {
+        if (estacion == null) return "--";
+        String clean = estacion.trim();
+        if (clean.isEmpty()) return "--";
+        String upper = clean.toUpperCase();
+        return switch (upper) {
+            case "VERANO" -> "Verano";
+            case "PRIMAVERA" -> "Primavera";
+            case "INVIERNO" -> "Invierno";
+            default -> (clean.length() == 1)
+                    ? clean.toUpperCase()
+                    : clean.substring(0, 1).toUpperCase() + clean.substring(1).toLowerCase();
+        };
     }
 
     // ----------------------------------------------------------
