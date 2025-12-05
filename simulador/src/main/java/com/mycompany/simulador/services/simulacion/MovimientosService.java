@@ -62,7 +62,6 @@ public class MovimientosService implements IMovimientosStrategy {
 
     public void moverEspecies(Ecosistema e, Consumer<MovimientoPaso> stepCb) {
         ultimoMovimiento = null;
-        incrementarSobrevivencia(e);
         moverUnaPresa(e, stepCb);
         List<Celda> depredadores = obtenerDepredadores(e);
 
@@ -260,17 +259,6 @@ public class MovimientosService implements IMovimientosStrategy {
         return esp instanceof Depredador;
     }
 
-    private void incrementarSobrevivencia(Ecosistema e) {
-        for (Celda[] fila : e.getMatriz()) {
-            for (Celda c : fila) {
-                Especie esp = c.getEspecie();
-                if (esp != null && esp.isViva()) {
-                    esp.incrementarTurnosSobrevividos();
-                }
-            }
-        }
-    }
-
     private void notificarPaso(Consumer<MovimientoPaso> cb, MovimientoPaso paso) {
         if (cb != null && paso != null) {
             cb.accept(paso);
@@ -305,7 +293,7 @@ public class MovimientosService implements IMovimientosStrategy {
 
     private void notificarEvento(com.mycompany.simulador.model.ecosystem.Coordenada coord, TurnoEvento.Tipo tipo) {
         if (eventoCallback != null && coord != null) {
-            eventoCallback.accept(new TurnoEvento(coord, tipo));
+            eventoCallback.accept(new TurnoEvento(coord, tipo, null));
         }
     }
 }

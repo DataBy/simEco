@@ -75,11 +75,11 @@ public class ReproduccionService implements IReproduccionStrategy {
         }
         Celda destino = AleatorioUtils.elegirAleatorio(libres);
         // Aviso previo: resaltar el espacio libre antes de colocar la cría
-        notificarEvento(destino.getCoordenada(), com.mycompany.simulador.services.simulacion.TurnoEvento.Tipo.NACIMIENTO_PRE);
+        notificarEvento(destino.getCoordenada(), com.mycompany.simulador.services.simulacion.TurnoEvento.Tipo.NACIMIENTO_PRE, origen.getCoordenada());
         destino.setEspecie(cria);
         cria.setPosicion(destino.getCoordenada());
         log(tipo + " en " + coord(origen) + " se reproduce en " + coord(destino));
-        notificarEvento(destino.getCoordenada(), com.mycompany.simulador.services.simulacion.TurnoEvento.Tipo.NACIMIENTO);
+        notificarEvento(destino.getCoordenada(), com.mycompany.simulador.services.simulacion.TurnoEvento.Tipo.NACIMIENTO, origen.getCoordenada());
         return true;
     }
 
@@ -107,9 +107,10 @@ public class ReproduccionService implements IReproduccionStrategy {
     }
 
     private void notificarEvento(com.mycompany.simulador.model.ecosystem.Coordenada coord,
-                                 com.mycompany.simulador.services.simulacion.TurnoEvento.Tipo tipo) {
+                                 com.mycompany.simulador.services.simulacion.TurnoEvento.Tipo tipo,
+                                 com.mycompany.simulador.model.ecosystem.Coordenada origen) {
         if (eventoCallback != null && coord != null) {
-            eventoCallback.accept(new com.mycompany.simulador.services.simulacion.TurnoEvento(coord, tipo));
+            eventoCallback.accept(new com.mycompany.simulador.services.simulacion.TurnoEvento(coord, tipo, origen));
         }
     }
 }

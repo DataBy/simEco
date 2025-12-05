@@ -647,6 +647,7 @@ public class SimulacionView {
             int f = ev.coordenada().getFila();
             int c = ev.coordenada().getColumna();
             if (ev.tipo() == TurnoEvento.Tipo.NACIMIENTO_PRE) {
+                copiarIconoPadre(ev);
                 resaltarTemporal(f, c, "#2ecc71", 2.5);
             } else if (ev.tipo() == TurnoEvento.Tipo.NACIMIENTO) {
                 resaltarTemporal(f, c, "#2ecc71", 2.5);
@@ -654,6 +655,24 @@ public class SimulacionView {
                 resaltarTemporal(f, c, "#000000", 2.5);
             }
         }
+    }
+
+    private void copiarIconoPadre(TurnoEvento ev) {
+        if (ev.origen() == null || ev.coordenada() == null) return;
+        int of = ev.origen().getFila();
+        int oc = ev.origen().getColumna();
+        int df = ev.coordenada().getFila();
+        int dc = ev.coordenada().getColumna();
+        if (!dentroRango(of, oc) || !dentroRango(df, dc)) return;
+        String iconPadre = iconCache[of][oc];
+        if (iconPadre != null) {
+            iconCache[df][dc] = iconPadre;
+            simboloCache[df][dc] = simboloCache[of][oc];
+        }
+    }
+
+    private boolean dentroRango(int f, int c) {
+        return f >= 0 && c >= 0 && f < Constantes.MATRIZ_FILAS && c < Constantes.MATRIZ_COLUMNAS;
     }
 
     public void mostrarEscenarioAleatorio() {

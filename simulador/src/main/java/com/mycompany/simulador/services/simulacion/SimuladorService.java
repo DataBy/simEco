@@ -52,6 +52,7 @@ public class SimuladorService implements ISimulador {
         for (int turno = 1; turno <= config.getMaxTurnos(); turno++) {
             turnosEjecutados = turno;
             int turnoActual = turno;
+            java.util.List<com.mycompany.simulador.model.species.Especie> vivosInicio = snapshotEspeciesVivas(e);
             movimientosStrategy.setLogCallback(m -> {
                 logEvent(m);
             });
@@ -73,6 +74,7 @@ public class SimuladorService implements ISimulador {
             SimLogger.log("Turno " + turno + " - reproduccion");
             reproduccionStrategy.reproducir(e);
             geneticaService.aplicarMutaciones(e);
+            incrementarSobrevivencia(vivosInicio);
 
             Turno t = ecosistemaService.calcularTurno(turno, e);
             char[][] matrizSimbolos = ecosistemaService.construirMatrizSimbolos(e);
@@ -135,6 +137,27 @@ public class SimuladorService implements ISimulador {
         SimLogger.log(msg);
         if (logCallback != null) {
             logCallback.accept(msg);
+        }
+    }
+
+    private java.util.List<com.mycompany.simulador.model.species.Especie> snapshotEspeciesVivas(Ecosistema e) {
+        java.util.List<com.mycompany.simulador.model.species.Especie> vivos = new java.util.ArrayList<>();
+        for (com.mycompany.simulador.model.ecosystem.Celda[] fila : e.getMatriz()) {
+            for (com.mycompany.simulador.model.ecosystem.Celda c : fila) {
+                if (c.getEspecie() != null && c.getEspecie().isViva()) {
+                    vivos.add(c.getEspecie());
+                }
+            }
+        }
+        return vivos;
+    }
+
+    private void incrementarSobrevivencia(java.util.List<com.mycompany.simulador.model.species.Especie> snapshot) {
+        if (snapshot == null) return;
+        for (com.mycompany.simulador.model.species.Especie esp : snapshot) {
+            if (esp != null && esp.isViva()) {
+                esp.incrementarTurnosSobrevividos();
+            }
         }
     }
 }
