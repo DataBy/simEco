@@ -14,6 +14,8 @@ import com.mycompany.simulador.repository.EstadoTurnosRepositoryTXT;
 import com.mycompany.simulador.services.simulacion.SimuladorService;
 import com.mycompany.simulador.view.ResumenView;
 import com.mycompany.simulador.view.SimulacionView;
+import com.mycompany.simulador.view.EscenarioSnapshot;
+import com.mycompany.simulador.view.EscenariosGaleriaView;
 
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -104,15 +106,16 @@ public class SimulacionController {
 
         Thread hilo = new Thread(() -> {
             List<ReporteFinal> resultados = new ArrayList<>();
+            List<EscenarioSnapshot> snapshots = new ArrayList<>();
 
             ejecutarEscenario("VERANO", base.getMaxTurnos(),
-                    RutasArchivos.ICON_ELEMENTO_PASTO_AMARILLO, resultados);
+                    RutasArchivos.ICON_ELEMENTO_PASTO_AMARILLO, resultados, snapshots);
             ejecutarEscenario("PRIMAVERA", base.getMaxTurnos(),
-                    RutasArchivos.ICON_ELEMENTO_PASTO_VERDE, resultados);
+                    RutasArchivos.ICON_ELEMENTO_PASTO_VERDE, resultados, snapshots);
             ejecutarEscenario("INVIERNO", base.getMaxTurnos(),
-                    RutasArchivos.ICON_ELEMENTO_LAGO, resultados);
+                    RutasArchivos.ICON_ELEMENTO_LAGO, resultados, snapshots);
 
-            Platform.runLater(() -> mostrarReportes(resultados));
+            Platform.runLater(() -> mostrarGaleria(snapshots, resultados));
         });
 
         hilo.setDaemon(true);
@@ -155,7 +158,8 @@ public class SimulacionController {
     }
 
     private void ejecutarEscenario(String nombre, int turnos, String elemento,
-                                   List<ReporteFinal> resultados) {
+                                   List<ReporteFinal> resultados,
+                                   List<EscenarioSnapshot> snapshots) {
         SimulacionConfigDTO cfg = crearConfig();
         cfg.setEscenario(nombre);
         cfg.setMaxTurnos(turnos);
@@ -178,6 +182,9 @@ public class SimulacionController {
                         Platform.runLater(() -> {
                             view.actualizarTiempoSabanero(turnoActual, nombre);
                             view.actualizarMatriz(matrizSimbolos, false);
+                            if (turnoActual == 1) {
+                                guardarSnapshot(nombre, matrizSimbolos, snapshots);
+                            }
                         });
                     }
 
@@ -198,5 +205,30 @@ public class SimulacionController {
                 }
         );
         resultados.add(r);
+    }
+
+    private void mostrarGaleria(List<EscenarioSnapshot> snaps, List<ReporteFinal> reportes) {
+        EscenariosGaleriaView gView = new EscenariosGaleriaView();
+        gView.setEscenarios(snaps);
+        Scene scene = new Scene(gView.getRoot(), stage.getWidth(), stage.getHeight());
+        stage.setScene(scene);
+        gView.setOnSiguiente(() -> Platform.runLater(() -> mostrarReportes(reportes)));
+    }
+
+    private void guardarSnapshot(String nombre, char[][] matriz, List<EscenarioSnapshot> snaps) {
+        if (matriz == null || snaps == null) return;
+        boolean existe = snaps.stream().anyMatch(s -> s.getNombre().equalsIgnoreCase(nombre));
+        if (existe) return;
+        snaps.add(new EscenarioSnapshot(nombre, clonar(matriz)));
+    }
+
+    private char[][] clonar(char[][] src) {
+        if (src == null) return null;
+        char[][] copia = new char[src.length][];
+        for (int i = 0; i < src.length; i++) {
+            copia[i] = new char[src[i].length];
+            System.arraycopy(src[i], 0, copia[i], 0, src[i].length);
+        }
+        return copia;
     }
 }

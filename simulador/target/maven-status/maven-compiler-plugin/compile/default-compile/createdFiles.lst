@@ -75,7 +75,9 @@ com\mycompany\simulador\model\species\TerceraEspecie.class
 com\mycompany\simulador\interfaces\IAlimentacionStrategy.class
 com\mycompany\simulador\repository\EcossitemaRepositoryTXT.class
 com\mycompany\simulador\controller\SimulacionController$1.class
+com\mycompany\simulador\view\EscenarioSnapshot.class
 com\mycompany\simulador\interfaces\IEcosistemaRepository.class
+com\mycompany\simulador\view\EscenariosGaleriaView.class
 com\mycompany\simulador\controller\AnalisisComparativoController.class
 com\mycompany\simulador\utils\MatrizUtils.class
 com\mycompany\simulador\controller\SimulacionController.class

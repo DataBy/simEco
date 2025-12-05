@@ -36,6 +36,7 @@ C:\Users\USER\Desktop\simEco\simulador\src\main\java\com\mycompany\simulador\mod
 C:\Users\USER\Desktop\simEco\simulador\src\main\java\com\mycompany\simulador\model\genetics\Genotipo.java
 C:\Users\USER\Desktop\simEco\simulador\src\main\java\com\mycompany\simulador\model\ecosystem\Coordenada.java
 C:\Users\USER\Desktop\simEco\simulador\src\main\java\com\mycompany\simulador\repository\UsuarioRepositoryTXT.java
+C:\Users\USER\Desktop\simEco\simulador\src\main\java\com\mycompany\simulador\view\EscenariosGaleriaView.java
 C:\Users\USER\Desktop\simEco\simulador\src\main\java\com\mycompany\simulador\controller\SimulacionController.java
 C:\Users\USER\Desktop\simEco\simulador\src\main\java\com\mycompany\simulador\config\Constantes.java
 C:\Users\USER\Desktop\simEco\simulador\src\main\java\com\mycompany\simulador\utils\MatrizUtils.java
@@ -71,5 +72,6 @@ C:\Users\USER\Desktop\simEco\simulador\src\main\java\com\mycompany\simulador\dto
 C:\Users\USER\Desktop\simEco\simulador\src\main\java\com\mycompany\simulador\utils\ArchivoUtils.java
 C:\Users\USER\Desktop\simEco\simulador\src\main\java\com\mycompany\simulador\config\ConfigSimulacion.java
 C:\Users\USER\Desktop\simEco\simulador\src\main\java\com\mycompany\simulador\view\LoginView.java
+C:\Users\USER\Desktop\simEco\simulador\src\main\java\com\mycompany\simulador\view\EscenarioSnapshot.java
 C:\Users\USER\Desktop\simEco\simulador\src\main\java\com\mycompany\simulador\dto\ReporteDTO.java
 C:\Users\USER\Desktop\simEco\simulador\src\main\java\com\mycompany\simulador\services\genetica\MutacionService.java
