@@ -124,6 +124,8 @@ public class SimulacionController {
         Scene scene = new Scene(rView.getRoot(), stage.getWidth(), stage.getHeight());
         stage.setScene(scene);
 
+        rView.setOnInicio(() -> Platform.runLater(() -> new MenuInicioController(stage)));
+
         int totalTurnos = reportes.stream().mapToInt(ReporteFinal::getTotalTurnos).sum();
         int presasFinales = reportes.stream().mapToInt(ReporteFinal::getPresasFinales).sum();
         int depredadoresFinales = reportes.stream().mapToInt(ReporteFinal::getDepredadoresFinales).sum();

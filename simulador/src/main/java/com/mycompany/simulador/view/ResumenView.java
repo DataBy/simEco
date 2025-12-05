@@ -7,6 +7,7 @@ import com.mycompany.simulador.utils.IconosUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
@@ -28,6 +29,9 @@ public class ResumenView {
     private final VBox panelGraficoOcupacion = new VBox();
     private final VBox panelComparativo = new VBox();
     private final TextField txtComentario = new TextField();
+    private final Button btnInicio = new Button();
+    private final Button btnEnvioReporte = new Button();
+    private final Button btnEnviarCorreo = new Button();
     private static final double PANEL_GRAF_WIDTH = 400;
 
     public ResumenView() {
@@ -41,6 +45,7 @@ public class ResumenView {
         spTotalTurnos.setPrefWidth(140);
         spTotalTurnos.setStyle("-fx-opacity: 1; -fx-background-color: rgba(255,255,255,0.85);");
         spTotalTurnos.setFocusTraversable(false);
+        spTotalTurnos.setMouseTransparent(true); // modo lectura: sin clicks ni flechas
         txtTurnoExtincion.setEditable(false);
         txtTurnoExtincion.setPrefWidth(180);
         txtTurnoExtincion.setStyle("-fx-opacity: 1; -fx-background-color: rgba(255,255,255,0.85);");
@@ -51,6 +56,12 @@ public class ResumenView {
         content.setPadding(new Insets(26));
         content.setMaxWidth(1100);
         content.setMinWidth(780);
+
+        configurarBotonPlano(btnInicio, RutasArchivos.RESUMEN_BTN_INICIO);
+        configurarBotonPlano(btnEnvioReporte, RutasArchivos.RESUMEN_BTN_ENVIO_REPORTE);
+        configurarBotonPlano(btnEnviarCorreo, RutasArchivos.RESUMEN_BTN_ENVIAR_CORREO);
+        HBox acciones = new HBox(18, btnInicio, btnEnvioReporte, btnEnviarCorreo);
+        acciones.setAlignment(Pos.CENTER);
 
         HBox top = new HBox(18);
         top.setAlignment(Pos.CENTER);
@@ -80,7 +91,7 @@ public class ResumenView {
         panelComparativo.setMaxWidth(900);
         panelComparativo.getChildren().addAll(new Label("Analisis comparativo global:"), txtComentario);
 
-        content.getChildren().addAll(top, center, panelComparativo);
+        content.getChildren().addAll(top, center, panelComparativo, acciones);
         StackPane.setAlignment(content, Pos.CENTER);
 
         root.getChildren().addAll(bg, content);
@@ -135,5 +146,29 @@ public class ResumenView {
         cont.setAlignment(Pos.CENTER);
         cont.setFillWidth(false);
         return cont;
+    }
+
+    private void configurarBotonPlano(Button btn, String ruta) {
+        ImageView iv = new ImageView(IconosUtils.cargarImagen(ruta));
+        iv.setPreserveRatio(true);
+        iv.setFitWidth(170);
+        iv.setFitHeight(60);
+        btn.setGraphic(iv);
+        btn.setBackground(javafx.scene.layout.Background.EMPTY);
+        btn.setBorder(javafx.scene.layout.Border.EMPTY);
+        btn.setPickOnBounds(true);
+        btn.setPadding(Insets.EMPTY);
+    }
+
+    public void setOnInicio(Runnable r) {
+        btnInicio.setOnAction(e -> r.run());
+    }
+
+    public void setOnEnvioReporte(Runnable r) {
+        btnEnvioReporte.setOnAction(e -> r.run());
+    }
+
+    public void setOnEnviarCorreo(Runnable r) {
+        btnEnviarCorreo.setOnAction(e -> r.run());
     }
 }

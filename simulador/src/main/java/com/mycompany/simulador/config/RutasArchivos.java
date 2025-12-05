@@ -52,6 +52,12 @@ public final class RutasArchivos {
     // =====================================================
     public static final String RESUMEN_BACKGROUND =
             BASE + "/uiResumen/resumen/background.png";
+    public static final String RESUMEN_BTN_INICIO =
+            BASE + "/uiResumen/resumen/botones/inicio.png";
+    public static final String RESUMEN_BTN_ENVIO_REPORTE =
+            BASE + "/uiResumen/resumen/botones/generarReporte.png";
+    public static final String RESUMEN_BTN_ENVIAR_CORREO =
+            BASE + "/uiResumen/resumen/botones/enviarCorreo.png";
     public static final String RESUMEN_BTN_ENVIAR_PDF =
             BASE + "/uiResumen/resumen/botones/enviarPDF.png";
     public static final String RESUMEN_BTN_ENVIAR_PDF_HOVER =
