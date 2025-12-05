@@ -123,7 +123,7 @@ public final class RutasArchivos {
     public static final String ICON_PRESA_GACELA =
             BASE + "/uiSimulacion/escenario/presas/gacela.png";
     public static final String ICON_PRESA_EXTRA =
-            BASE + "/uiSimulacion/escenario/presas/工.png";
+            BASE + "/uiSimulacion/escenario/presas/gnu.png";
 
     public static final String ICON_DEPREDADOR =
             BASE + "/uiSimulacion/escenario/depravadores/leon.png";
@@ -157,3 +157,4 @@ public final class RutasArchivos {
     public static final String ICON_ELEMENTO_TRONCO =
             BASE + "/uiSimulacion/escenario/elementos/tronco.png";
 }
+

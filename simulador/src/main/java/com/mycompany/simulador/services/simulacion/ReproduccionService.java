@@ -29,7 +29,6 @@ public class ReproduccionService implements IReproduccionStrategy {
 
     @Override
     public void reproducir(Ecosistema e) {
-        boolean creadoEnTurno = false;
         List<Celda> snapshot = new ArrayList<>();
         for (Celda[] fila : e.getMatriz()) {
             for (Celda c : fila) {
@@ -37,24 +36,27 @@ public class ReproduccionService implements IReproduccionStrategy {
             }
         }
         for (Celda c : snapshot) {
-            if (creadoEnTurno) break;
             Especie esp = c.getEspecie();
             if (esp == null || !esp.isViva()) continue;
             if (esp instanceof Presa &&
                 esp.getTurnosSobrevividos() >= Constantes.TURNOS_SOBREVIVIR_REPRO_PRESA) {
-                boolean creado = reproducirEnVecinoVacio(e, c, new Presa("Presa"), "Presa");
-                if (creado) {
-                    esp.reiniciarTurnosSobrevividos();
-                    creadoEnTurno = true;
-                }
+                reproducirPresa(e, c, (Presa) esp);
             } else if (esp instanceof Depredador &&
                     esp.haComidoRecientemente(Constantes.VENTANA_TURNOS_REPRO_DEPREDADOR)) {
-                boolean creadoDep = reproducirEnVecinoVacio(e, c, new Depredador("Depredador"), "Depredador");
-                if (creadoDep) {
-                    creadoEnTurno = true;
-                }
+                reproducirDepredador(e, c);
             }
         }
+    }
+
+    private void reproducirPresa(Ecosistema e, Celda origen, Presa madre) {
+        boolean creado = reproducirEnVecinoVacio(e, origen, new Presa("Presa"), "Presa");
+        if (creado) {
+            madre.reiniciarTurnosSobrevividos();
+        }
+    }
+
+    private void reproducirDepredador(Ecosistema e, Celda origen) {
+        reproducirEnVecinoVacio(e, origen, new Depredador("Depredador"), "Depredador");
     }
 
     private boolean reproducirEnVecinoVacio(Ecosistema e, Celda origen, Especie cria, String tipo) {
@@ -63,16 +65,34 @@ public class ReproduccionService implements IReproduccionStrategy {
             Celda c = e.getCelda(coord.getFila(), coord.getColumna());
             if (c.estaVacia()) libres.add(c);
         }
+        // Si alrededor no hay huecos, busca cualquier celda vacía en la matriz
+        if (libres.isEmpty()) {
+            libres = buscarTodasLasVacias(e);
+        }
         if (libres.isEmpty()) {
             log(tipo + " en " + coord(origen) + " intenta reproducirse, pero no hay espacio libre");
             return false;
         }
         Celda destino = AleatorioUtils.elegirAleatorio(libres);
+        // Aviso previo: resaltar el espacio libre antes de colocar la cría
+        notificarEvento(destino.getCoordenada(), com.mycompany.simulador.services.simulacion.TurnoEvento.Tipo.NACIMIENTO_PRE);
         destino.setEspecie(cria);
         cria.setPosicion(destino.getCoordenada());
         log(tipo + " en " + coord(origen) + " se reproduce en " + coord(destino));
         notificarEvento(destino.getCoordenada(), com.mycompany.simulador.services.simulacion.TurnoEvento.Tipo.NACIMIENTO);
         return true;
+    }
+
+    private List<Celda> buscarTodasLasVacias(Ecosistema e) {
+        List<Celda> vacias = new ArrayList<>();
+        for (Celda[] fila : e.getMatriz()) {
+            for (Celda c : fila) {
+                if (c.estaVacia()) {
+                    vacias.add(c);
+                }
+            }
+        }
+        return vacias;
     }
 
     private String coord(Celda c) {

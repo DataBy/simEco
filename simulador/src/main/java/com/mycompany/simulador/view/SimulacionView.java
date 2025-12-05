@@ -598,7 +598,7 @@ public class SimulacionView {
     }
 
     public void mostrarMovimiento(Coordenada origen, Coordenada destino, boolean esDepredador, boolean comio, char[][] matriz) {
-        if (esDepredador && origen != null && destino != null && matriz != null) {
+        if (origen != null && destino != null && matriz != null) {
             int of = origen.getFila();
             int oc = origen.getColumna();
             int df = destino.getFila();
@@ -608,7 +608,8 @@ public class SimulacionView {
                 String iconAnterior = iconCache[of][oc];
                 char simboloDestino = matriz[df][dc];
                 if (iconAnterior != null) {
-                    iconCache[df][dc] = iconAnterior;   // conserva el mismo depredador
+                    // Conserva el mismo asset de la especie al desplazarse.
+                    iconCache[df][dc] = iconAnterior;
                     simboloCache[df][dc] = simboloDestino;
                     iconCache[of][oc] = null;
                     simboloCache[of][oc] = '\0';
@@ -645,7 +646,9 @@ public class SimulacionView {
             if (ev == null || ev.coordenada() == null) continue;
             int f = ev.coordenada().getFila();
             int c = ev.coordenada().getColumna();
-            if (ev.tipo() == TurnoEvento.Tipo.NACIMIENTO) {
+            if (ev.tipo() == TurnoEvento.Tipo.NACIMIENTO_PRE) {
+                resaltarTemporal(f, c, "#2ecc71", 2.5);
+            } else if (ev.tipo() == TurnoEvento.Tipo.NACIMIENTO) {
                 resaltarTemporal(f, c, "#2ecc71", 2.5);
             } else if (ev.tipo() == TurnoEvento.Tipo.MUERTE) {
                 resaltarTemporal(f, c, "#000000", 2.5);

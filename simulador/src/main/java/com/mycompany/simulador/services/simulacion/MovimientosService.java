@@ -62,11 +62,9 @@ public class MovimientosService implements IMovimientosStrategy {
 
     public void moverEspecies(Ecosistema e, Consumer<MovimientoPaso> stepCb) {
         ultimoMovimiento = null;
+        incrementarSobrevivencia(e);
         moverUnaPresa(e, stepCb);
         List<Celda> depredadores = obtenerDepredadores(e);
-        for (Celda c : depredadores) {
-            c.getEspecie().incrementarTurnosSobrevividos();
-        }
 
         CaminoSeleccion camino = elegirCaminoAPresa(e, depredadores);
         if (camino == null) {
@@ -125,7 +123,7 @@ public class MovimientosService implements IMovimientosStrategy {
         for (Celda[] fila : e.getMatriz()) {
             for (Celda c : fila) {
                 Especie esp = c.getEspecie();
-                if (esp != null && esp.isViva() && esDepredador(esp)) {
+                if (esp != null && esp.isViva() && esp.getTipo() == Especie.Tipo.DEPREDADOR) {
                     depredadores.add(c);
                 }
             }
@@ -236,8 +234,10 @@ public class MovimientosService implements IMovimientosStrategy {
         Celda destino = e.getCelda(destinoCoord.getFila(), destinoCoord.getColumna());
         Especie presa = origen.getEspecie();
 
-        // Aviso previo para resaltar qué presa se moverá
+        // Aviso previo para resaltar que presa se movera
         notificarPaso(stepCb, new MovimientoPaso(origen.getCoordenada(), null, false, false, true));
+        // Pausa breve para que el borde azul previo sea visible antes de mover
+        dormirPasoLento();
 
         origen.setEspecie(null);
         destino.setEspecie(presa);
@@ -246,10 +246,29 @@ public class MovimientosService implements IMovimientosStrategy {
         }
         // Aviso post-movimiento
         notificarPaso(stepCb, new MovimientoPaso(origen.getCoordenada(), destinoCoord, false, false, false));
+        ultimoMovimiento = new Movimiento(
+                origen.getCoordenada(),
+                destinoCoord,
+                false,
+                false,
+                false
+        );
+        logMovimiento(presa, origen.getCoordenada(), destinoCoord, false);
     }
 
     private boolean esDepredador(Especie esp) {
-        return esp instanceof Depredador || esp instanceof TerceraEspecie;
+        return esp instanceof Depredador;
+    }
+
+    private void incrementarSobrevivencia(Ecosistema e) {
+        for (Celda[] fila : e.getMatriz()) {
+            for (Celda c : fila) {
+                Especie esp = c.getEspecie();
+                if (esp != null && esp.isViva()) {
+                    esp.incrementarTurnosSobrevividos();
+                }
+            }
+        }
     }
 
     private void notificarPaso(Consumer<MovimientoPaso> cb, MovimientoPaso paso) {
@@ -267,6 +286,7 @@ public class MovimientosService implements IMovimientosStrategy {
     private String describir(Especie esp) {
         if (esp instanceof TerceraEspecie) return "Tercera especie";
         if (esp instanceof Depredador) return "Depredador";
+        if (esp != null && esp.getTipo() == Especie.Tipo.PRESA) return "Presa";
         return "Especie";
     }
 
