@@ -72,7 +72,7 @@ public class MenuInicioView {
 
         // BotÃ³n Exit arriba a la izquierda
         StackPane.setAlignment(btnExit, Pos.TOP_LEFT);
-        btnExit.setTranslateX(450);
+        btnExit.setTranslateX(462); // pequeño ajuste a la derecha
         btnExit.setTranslateY(30);
 
         // ======================================================
@@ -100,3 +100,4 @@ public class MenuInicioView {
     public void setOnSignUp(Runnable r) { btnSignUp.setOnAction(e -> r.run()); }
     public void setOnExit(Runnable r)   { btnExit.setOnAction(e -> r.run()); }
 }
+

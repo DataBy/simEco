@@ -277,7 +277,7 @@ public class SimulacionView {
         // PANEL CENTRAL: MATRIZ RESPONSIVE (SIN FONDO CAFÉ)
         // ======================================================
         panelCentro = new StackPane();
-        panelCentro.setPadding(new Insets(10));
+        panelCentro.setPadding(new Insets(4));
         panelCentro.setStyle("-fx-background-color: transparent;");
 
         gridSimulacion = new GridPane();
@@ -1220,3 +1220,6 @@ public class SimulacionView {
         }
     }
 }
+
+
+
