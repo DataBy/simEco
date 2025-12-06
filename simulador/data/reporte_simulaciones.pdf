@@ -1,0 +1,316 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 3768 >>
+stream
+BT
+/F1 12 Tf
+12 TL
+50 750 Td
+(REPORTE DE SIMULACIONES) Tj
+T*
+() Tj
+T*
+(Simulacion 1 - VERANO) Tj
+T*
+(Turnos ejecutados: 3) Tj
+T*
+(Presas finales: 54) Tj
+T*
+(Depredadores finales: 9) Tj
+T*
+(Tercera especie final: 0) Tj
+T*
+(Turno de extincion: N/A) Tj
+T*
+(Ocupacion final: 63,0%) Tj
+T*
+() Tj
+T*
+(  Turno 1 - Presas=29, Depredadores=26, Tercera=5, Ocupadas=60) Tj
+T*
+(    .P.DDT..PD) Tj
+T*
+(    DPTD.TP.DP) Tj
+T*
+(    .P..DP..DP) Tj
+T*
+(    .P.D.P.D.P) Tj
+T*
+(    .DDP..PDPD) Tj
+T*
+(    .T.DP.PDDD) Tj
+T*
+(    TP..D....D) Tj
+T*
+(    D..PDDPPPP) Tj
+T*
+(    P.PDPPD..P) Tj
+T*
+(    .P.P..D...) Tj
+T*
+() Tj
+T*
+(  Turno 2 - Presas=28, Depredadores=28, Tercera=5, Ocupadas=61) Tj
+T*
+(    .P.DDT..PD) Tj
+T*
+(    DPTDDTP.DD) Tj
+T*
+(    .P..DP..DP) Tj
+T*
+(    .P.D.P.D.P) Tj
+T*
+(    .DDP..PDPD) Tj
+T*
+(    .T.DP.PDDD) Tj
+T*
+(    TP..D....D) Tj
+T*
+(    D..PDDPPPP) Tj
+T*
+(    P.PDPPD..P) Tj
+T*
+(    .PP...D...) Tj
+T*
+() Tj
+T*
+(  Turno 3 - Presas=54, Depredadores=9, Tercera=0, Ocupadas=63) Tj
+T*
+(    PP.DDD..PD) Tj
+T*
+(    PP..DPP.PD) Tj
+T*
+(    .PP.DD..PP) Tj
+T*
+(    .PP.PP..PP) Tj
+T*
+(    ...PPPP.P.) Tj
+T*
+(    .P..PPPPP.) Tj
+T*
+(    .P.D..PP.P) Tj
+T*
+(    P.PP..PPPP) Tj
+T*
+(    P.PPPP..PP) Tj
+T*
+(    PPPPPP...P) Tj
+T*
+() Tj
+T*
+(------------------------------------------------------------) Tj
+T*
+() Tj
+T*
+(Simulacion 2 - PRIMAVERA) Tj
+T*
+(Turnos ejecutados: 3) Tj
+T*
+(Presas finales: 54) Tj
+T*
+(Depredadores finales: 9) Tj
+T*
+(Tercera especie final: 0) Tj
+T*
+(Turno de extincion: N/A) Tj
+T*
+(Ocupacion final: 63,0%) Tj
+T*
+() Tj
+T*
+(  Turno 1 - Presas=29, Depredadores=26, Tercera=5, Ocupadas=60) Tj
+T*
+(    .P.P.D.DP.) Tj
+T*
+(    .DDTPDDP..) Tj
+T*
+(    DDP.DPD..P) Tj
+T*
+(    .D.PPPP...) Tj
+T*
+(    ...PPDDDDP) Tj
+T*
+(    P.....D.DD) Tj
+T*
+(    TPDD.T..DP) Tj
+T*
+(    DPDP...PP.) Tj
+T*
+(    ..PPDD...P) Tj
+T*
+(    T.P.DPPTP.) Tj
+T*
+() Tj
+T*
+(  Turno 2 - Presas=28, Depredadores=28, Tercera=5, Ocupadas=61) Tj
+T*
+(    .D.P.D.DP.) Tj
+T*
+(    .DDTPDDP..) Tj
+T*
+(    DDP.DPD..P) Tj
+T*
+(    .D.PPPPD..) Tj
+T*
+(    ...PPDDDDP) Tj
+T*
+(    P.....D.DD) Tj
+T*
+(    TPDD.T..DP) Tj
+T*
+(    DPDP...PP.) Tj
+T*
+(    ..PPDD..PP) Tj
+T*
+(    T.P.DPPT..) Tj
+T*
+() Tj
+T*
+(  Turno 3 - Presas=54, Depredadores=9, Tercera=0, Ocupadas=63) Tj
+T*
+(    .DDPP..PP.) Tj
+T*
+(    .D..PP.PP.) Tj
+T*
+(    ..PPPDD..P) Tj
+T*
+(    ..PPPPPD.P) Tj
+T*
+(    P.PPPPPDDP) Tj
+T*
+(    PP..P..D.P) Tj
+T*
+(    .P......PP) Tj
+T*
+(    .PPPP.PPPP) Tj
+T*
+(    .PPP...PPP) Tj
+T*
+(    .PPPPPPP.P) Tj
+T*
+() Tj
+T*
+(------------------------------------------------------------) Tj
+T*
+() Tj
+T*
+(Simulacion 3 - INVIERNO) Tj
+T*
+(Turnos ejecutados: 3) Tj
+T*
+(Presas finales: 54) Tj
+T*
+(Depredadores finales: 9) Tj
+T*
+(Tercera especie final: 0) Tj
+T*
+(Turno de extincion: N/A) Tj
+T*
+(Ocupacion final: 63,0%) Tj
+T*
+() Tj
+T*
+(  Turno 1 - Presas=29, Depredadores=26, Tercera=5, Ocupadas=60) Tj
+T*
+(    .PDPDPDDD.) Tj
+T*
+(    DPTDDDD..P) Tj
+T*
+(    .T.D..PDPD) Tj
+T*
+(    PP.DPP...D) Tj
+T*
+(    ..PP..DT.D) Tj
+T*
+(    .P..D.D..T) Tj
+T*
+(    PPP.P....P) Tj
+T*
+(    .DTD.D.PDP) Tj
+T*
+(    DDP.DP..PP) Tj
+T*
+(    ..P..PP..P) Tj
+T*
+() Tj
+T*
+(  Turno 2 - Presas=28, Depredadores=28, Tercera=5, Ocupadas=61) Tj
+T*
+(    .PDPDPDDD.) Tj
+T*
+(    DPTDDDD..P) Tj
+T*
+(    .T.D..PDPD) Tj
+T*
+(    PP..PP...D) Tj
+T*
+(    ..PDD.DT.D) Tj
+T*
+(    .P..D.D..T) Tj
+T*
+(    PPP.P....P) Tj
+T*
+(    .DTD.D.PDP) Tj
+T*
+(    DDP.DP.P.P) Tj
+T*
+(    .DP..PP..P) Tj
+T*
+() Tj
+T*
+(  Turno 3 - Presas=54, Depredadores=9, Tercera=0, Ocupadas=63) Tj
+T*
+(    .DDPPP...P) Tj
+T*
+(    .PP..P..PP) Tj
+T*
+(    .P....PPPP) Tj
+T*
+(    PPPPPPP...) Tj
+T*
+(    PPPDD.....) Tj
+T*
+(    .PPD.....P) Tj
+T*
+(    PPPPP....P) Tj
+T*
+(    PDP..P.PPP) Tj
+T*
+(    DDPP.PPPPP) Tj
+T*
+(    .DPPPPPPPP) Tj
+T*
+() Tj
+T*
+(------------------------------------------------------------) Tj
+T*
+() Tj
+T*
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000004060 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+4130
+%%EOF

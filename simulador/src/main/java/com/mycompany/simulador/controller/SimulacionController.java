@@ -1,7 +1,11 @@
 package com.mycompany.simulador.controller;
 
+import java.awt.Desktop;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.mycompany.simulador.config.ConfigSimulacion;
 import com.mycompany.simulador.config.Constantes;
@@ -11,11 +15,13 @@ import com.mycompany.simulador.interfaces.ISimulador;
 import com.mycompany.simulador.model.report.ReporteFinal;
 import com.mycompany.simulador.repository.EcossitemaRepositoryTXT;
 import com.mycompany.simulador.repository.EstadoTurnosRepositoryTXT;
+import com.mycompany.simulador.services.reportes.PdfService;
 import com.mycompany.simulador.services.simulacion.SimuladorService;
 import com.mycompany.simulador.view.ResumenView;
 import com.mycompany.simulador.view.SimulacionView;
 import com.mycompany.simulador.view.EscenarioSnapshot;
 import com.mycompany.simulador.view.EscenariosGaleriaView;
+import com.mycompany.simulador.view.DialogoConfirmacion;
 
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -25,22 +31,17 @@ public class SimulacionController {
 
     private final Stage stage;
     private final SimulacionView view;
-    private final ISimulador simulador;
+    private final EstadoTurnosRepositoryTXT estadoRepo;
     private final String correoUsuario;
+    private final PdfService pdfService = new PdfService();
 
     public SimulacionController(Stage stage, String correoUsuario) {
         this.stage = stage;
         this.correoUsuario = correoUsuario;
         this.view = new SimulacionView();
-        this.simulador = new SimuladorService(
-                new EcossitemaRepositoryTXT(),
-                new EstadoTurnosRepositoryTXT()
-        );
-
+        this.estadoRepo = new EstadoTurnosRepositoryTXT();
         Scene scene = new Scene(view.getRoot(), stage.getWidth(), stage.getHeight());
         stage.setScene(scene);
-        ((SimuladorService) this.simulador).setLogCallback(msg ->
-                Platform.runLater(() -> view.log(msg)));
         init();
     }
 
@@ -141,6 +142,9 @@ public class SimulacionController {
     }
 
     private void iniciarSimulacion() {
+        // Limpiar registros anteriores para no duplicar datos entre simulaciones consecutivas.
+        estadoRepo.limpiar();
+
         SimulacionConfigDTO base = crearConfig();
 
         boolean usarPersonalizado = view.esPersonalizadoActivo() && view.getMatrizPersonalizada() != null;
@@ -173,11 +177,26 @@ public class SimulacionController {
     }
 
     private void mostrarReportes(List<ReporteFinal> reportes) {
+        List<ReporteFinal> fuente = reconstruirReportesDesdeEstados();
+        if (!fuente.isEmpty()) {
+            reportes = fuente;
+        }
+
         ResumenView rView = new ResumenView();
         Scene scene = new Scene(rView.getRoot(), stage.getWidth(), stage.getHeight());
         stage.setScene(scene);
 
         rView.setOnInicio(() -> Platform.runLater(() -> new MenuInicioController(stage)));
+        List<ReporteFinal> reportesFinales = reportes;
+        rView.setOnEnvioReporte(() -> Platform.runLater(() -> {
+            try {
+                java.io.File pdf = pdfService.generarReporteSimulaciones(reportesFinales);
+                DialogoConfirmacion.mostrar("Reporte generado en: " + pdf.getAbsolutePath());
+                abrirArchivo(pdf);
+            } catch (Exception ex) {
+                DialogoConfirmacion.mostrar("No se pudo generar el reporte: " + ex.getMessage());
+            }
+        }));
 
         int totalTurnos = reportes.stream().mapToInt(ReporteFinal::getTotalTurnos).sum();
         int presasFinales = reportes.stream().mapToInt(ReporteFinal::getPresasFinales).sum();
@@ -207,10 +226,65 @@ public class SimulacionController {
         rView.actualizarComparativo(reportes);
     }
 
+    /**
+     * Reconstruye los reportes finales a partir del archivo de estados,
+     * asegurando que cada escenario muestre sus propias cifras y evitando duplicados en memoria.
+     */
+    private List<ReporteFinal> reconstruirReportesDesdeEstados() {
+        List<com.mycompany.simulador.dto.EstadoTurnoDTO> estados = estadoRepo.cargarEstados();
+        if (estados == null || estados.isEmpty()) return List.of();
+
+        Map<String, List<com.mycompany.simulador.dto.EstadoTurnoDTO>> porEscenario = new LinkedHashMap<>();
+        for (var e : estados) {
+            porEscenario.computeIfAbsent(e.getEscenario(), k -> new ArrayList<>()).add(e);
+        }
+
+        int totalCeldas = Constantes.MATRIZ_FILAS * Constantes.MATRIZ_COLUMNAS;
+        List<ReporteFinal> lista = new ArrayList<>();
+
+        for (var entry : porEscenario.entrySet()) {
+            List<com.mycompany.simulador.dto.EstadoTurnoDTO> listaEsc = entry.getValue();
+            if (listaEsc.isEmpty()) continue;
+            listaEsc.sort(Comparator.comparingInt(com.mycompany.simulador.dto.EstadoTurnoDTO::getTurno));
+            com.mycompany.simulador.dto.EstadoTurnoDTO ultimo = listaEsc.get(listaEsc.size() - 1);
+
+            int turnoExtincion = listaEsc.stream()
+                    .filter(s -> s.getPresas() == 0 || s.getDepredadores() == 0)
+                    .mapToInt(com.mycompany.simulador.dto.EstadoTurnoDTO::getTurno)
+                    .min()
+                    .orElse(-1);
+
+            ReporteFinal r = new ReporteFinal();
+            r.setEscenario(entry.getKey());
+            r.setTotalTurnos(ultimo.getTurno());
+            r.setPresasFinales(ultimo.getPresas());
+            r.setDepredadoresFinales(ultimo.getDepredadores());
+            r.setTerceraEspecieFinal(ultimo.getTerceraEspecie());
+            r.setTurnoExtincion(turnoExtincion);
+            double ocupacion = totalCeldas == 0 ? 0 : (ultimo.getCeldasOcupadas() * 100.0 / totalCeldas);
+            r.setPorcentajeOcupacionFinal(ocupacion);
+            lista.add(r);
+        }
+
+        return lista;
+    }
+
+    private void abrirArchivo(java.io.File archivo) {
+        if (archivo == null || !archivo.exists()) return;
+        try {
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().open(archivo);
+            }
+        } catch (Exception e) {
+            // Evita romper el flujo si no se puede abrir; el usuario sigue teniendo la ruta en el mensaje.
+        }
+    }
+
     private void ejecutarEscenario(String nombre, int turnos, String elemento,
                                    List<ReporteFinal> resultados,
                                    List<EscenarioSnapshot> snapshots,
                                    char[][] matrizPersonalizada) {
+        SimuladorService simulador = crearSimulador();
         SimulacionConfigDTO cfg = crearConfig();
         cfg.setEscenario(nombre);
         cfg.setMaxTurnos(turnos);
@@ -259,6 +333,15 @@ public class SimulacionController {
                 }
         );
         resultados.add(r);
+    }
+
+    private SimuladorService crearSimulador() {
+        SimuladorService s = new SimuladorService(
+                new EcossitemaRepositoryTXT(),
+                estadoRepo
+        );
+        s.setLogCallback(msg -> Platform.runLater(() -> view.log(msg)));
+        return s;
     }
 
     private void mostrarGaleria(List<EscenarioSnapshot> snaps, List<ReporteFinal> reportes) {

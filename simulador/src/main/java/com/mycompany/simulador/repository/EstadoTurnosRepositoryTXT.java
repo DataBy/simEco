@@ -2,6 +2,7 @@ package com.mycompany.simulador.repository;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.mycompany.simulador.config.AppConfig;
@@ -12,6 +13,13 @@ import com.mycompany.simulador.utils.ArchivoUtils;
 public class EstadoTurnosRepositoryTXT implements IEstadoTurnosRepository {
 
     private final Path path = AppConfig.ARCHIVO_ESTADO_TURNOS;
+
+    /**
+     * Limpia el archivo de estados para que una nueva simulacion no herede registros anteriores.
+     */
+    public void limpiar() {
+        ArchivoUtils.escribirLineas(path, Collections.emptyList(), false);
+    }
 
     @Override
     public void guardarEstado(EstadoTurnoDTO estado, char[][] matrizSimbolos) {
