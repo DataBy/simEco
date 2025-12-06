@@ -8,11 +8,13 @@ import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,11 +39,8 @@ public class EscenariosGaleriaView {
     }
 
     private void construirUI() {
-        root.setPadding(new Insets(20));
+        root.setPadding(new Insets(24, 24, 28, 24));
         root.setStyle("-fx-background-color: #A1D164;");
-
-        lblTitulo.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #235217;");
-        lblEscenario.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #235217;");
 
         btnPrev.setOnAction(e -> mostrarAnterior());
         btnNext.setOnAction(e -> mostrarSiguiente());
@@ -49,37 +48,85 @@ public class EscenariosGaleriaView {
             if (onSiguiente != null) onSiguiente.run();
         });
 
+        lblTitulo.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #235217;");
+        lblEscenario.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #235217;");
+
+        estilizarBotonNavegacion(btnPrev);
+        estilizarBotonNavegacion(btnNext);
+        estilizarBotonPrincipal(btnSiguiente);
+
         HBox header = new HBox(12, btnPrev, lblEscenario, btnNext);
         header.setAlignment(Pos.CENTER);
 
-        VBox topBox = new VBox(10, lblTitulo, header);
-        topBox.setAlignment(Pos.CENTER);
-        topBox.setPadding(new Insets(10));
-        root.setTop(topBox);
+        VBox card = new VBox(10, lblTitulo, header, btnSiguiente);
+        card.setAlignment(Pos.CENTER);
+        card.setMaxWidth(420);
+        card.setPadding(new Insets(14, 18, 16, 18));
+        card.setStyle("""
+            -fx-background-color: rgba(255,255,255,0.25);
+            -fx-background-radius: 18;
+            -fx-border-radius: 18;
+            -fx-border-color: rgba(255,255,255,0.55);
+            -fx-border-width: 1.6;
+        """);
+        DropShadow shadow = new DropShadow();
+        shadow.setColor(Color.rgb(0, 0, 0, 0.16));
+        shadow.setRadius(12);
+        shadow.setOffsetY(2);
+        card.setEffect(shadow);
 
         grid.setHgap(2);
         grid.setVgap(2);
-        grid.setAlignment(Pos.CENTER);
+        grid.setAlignment(Pos.TOP_CENTER);
+        grid.setPadding(new Insets(12, 0, 0, 0));
         for (int i = 0; i < Constantes.MATRIZ_FILAS; i++) {
             for (int j = 0; j < Constantes.MATRIZ_COLUMNAS; j++) {
                 ImageView iv = new ImageView(IconosUtils.cargarImagen(RutasArchivos.ICON_CELDA_VACIA));
-                iv.setFitWidth(Constantes.MATRIZ_TAM_CELDA * 0.5);
-                iv.setFitHeight(Constantes.MATRIZ_TAM_CELDA * 0.5);
+                iv.setFitWidth(Constantes.MATRIZ_TAM_CELDA * 0.9);
+                iv.setFitHeight(Constantes.MATRIZ_TAM_CELDA * 0.9);
                 iv.setPreserveRatio(false);
                 celdas[i][j] = iv;
                 grid.add(iv, j, i);
             }
         }
-        root.setCenter(grid);
 
-        HBox footer = new HBox(btnSiguiente);
-        footer.setAlignment(Pos.CENTER_RIGHT);
-        footer.setPadding(new Insets(10));
-        root.setBottom(footer);
+        VBox content = new VBox(10, card, grid);
+        content.setAlignment(Pos.TOP_CENTER);
+        BorderPane.setAlignment(content, Pos.TOP_CENTER);
+        root.setCenter(content);
+    }
+
+    private void estilizarBotonNavegacion(Button b) {
+        b.setPrefSize(40, 40);
+        b.setStyle("""
+            -fx-background-color: rgba(255,255,255,0.35);
+            -fx-background-radius: 12;
+            -fx-border-radius: 12;
+            -fx-border-color: rgba(255,255,255,0.8);
+            -fx-text-fill: #235217;
+            -fx-font-size: 16px;
+            -fx-font-weight: bold;
+        """);
+    }
+
+    private void estilizarBotonPrincipal(Button b) {
+        b.setMaxWidth(Double.MAX_VALUE);
+        b.setPrefWidth(220);
+        b.setStyle("""
+            -fx-background-color: rgba(255,255,255,0.55);
+            -fx-background-radius: 16;
+            -fx-border-radius: 16;
+            -fx-border-color: rgba(255,255,255,0.9);
+            -fx-border-width: 1.8;
+            -fx-text-fill: #235217;
+            -fx-font-size: 16px;
+            -fx-font-weight: bold;
+            -fx-padding: 8 14 8 14;
+        """);
     }
 
     public void setEscenarios(List<EscenarioSnapshot> lista) {
-        this.escenarios = (lista == null) ? new ArrayList<>() : new ArrayList<>(lista);
+        this.escenarios = ordenarPorEstacion(lista);
         this.index = 0;
         render();
     }
@@ -111,16 +158,23 @@ public class EscenariosGaleriaView {
             return;
         }
         EscenarioSnapshot snap = escenarios.get(index);
-        lblEscenario.setText(snap.getNombre());
-        pintarMatriz(snap.getMatriz());
+        lblEscenario.setText(formatearNombre(snap.getNombre()));
+        pintarMatriz(snap.getMatriz(), snap.getIconos());
     }
 
     private void pintarMatriz(char[][] matriz) {
+        pintarMatriz(matriz, null);
+    }
+
+    private void pintarMatriz(char[][] matriz, String[][] iconos) {
         for (int i = 0; i < Constantes.MATRIZ_FILAS; i++) {
             for (int j = 0; j < Constantes.MATRIZ_COLUMNAS; j++) {
                 char val = (matriz != null && i < matriz.length && j < matriz[i].length)
                         ? matriz[i][j] : 'E';
-                String ruta = rutaPara(val);
+                String ruta = rutaDesdeSnapshot(iconos, i, j);
+                if (ruta == null) {
+                    ruta = rutaPara(val);
+                }
                 var img = IconosUtils.cargarImagen(ruta);
                 if (img == null) {
                     img = IconosUtils.cargarImagen(RutasArchivos.ICON_CELDA_VACIA);
@@ -138,5 +192,62 @@ public class EscenariosGaleriaView {
             case 'M' -> RutasArchivos.ICON_MUTACION;
             default -> RutasArchivos.ICON_CELDA_VACIA;
         };
+    }
+
+    private String rutaDesdeSnapshot(String[][] iconos, int fila, int col) {
+        if (iconos == null) return null;
+        if (fila < 0 || col < 0) return null;
+        if (fila >= iconos.length || col >= iconos[fila].length) return null;
+        String ruta = iconos[fila][col];
+        return (ruta == null || ruta.isBlank()) ? null : ruta;
+    }
+
+    private String formatearNombre(String nombre) {
+        if (nombre == null || nombre.isBlank()) {
+            return "--";
+        }
+        String limpio = nombre.trim().toUpperCase();
+        return limpio + " - Turno 1";
+    }
+
+    private List<EscenarioSnapshot> ordenarPorEstacion(List<EscenarioSnapshot> lista) {
+        List<EscenarioSnapshot> base = (lista == null) ? new ArrayList<>() : new ArrayList<>(lista);
+        List<EscenarioSnapshot> ordenada = new ArrayList<>();
+        String[] estaciones = {"VERANO", "PRIMAVERA", "INVIERNO"};
+        for (String estacion : estaciones) {
+            EscenarioSnapshot snap = buscarPrimero(base, estacion);
+            if (snap != null) {
+                ordenada.add(snap);
+            }
+        }
+        for (EscenarioSnapshot snap : base) {
+            if (snap != null && !yaIncluido(ordenada, snap)) {
+                ordenada.add(snap);
+            }
+        }
+        if (ordenada.isEmpty()) {
+            ordenada.addAll(base);
+        }
+        return ordenada;
+    }
+
+    private boolean yaIncluido(List<EscenarioSnapshot> lista, EscenarioSnapshot candidato) {
+        for (EscenarioSnapshot snap : lista) {
+            if (snap != null && candidato != null
+                    && snap.getNombre() != null
+                    && snap.getNombre().equalsIgnoreCase(candidato.getNombre())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private EscenarioSnapshot buscarPrimero(List<EscenarioSnapshot> lista, String nombre) {
+        for (EscenarioSnapshot snap : lista) {
+            if (snap != null && nombre.equalsIgnoreCase(snap.getNombre())) {
+                return snap;
+            }
+        }
+        return null;
     }
 }

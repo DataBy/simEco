@@ -183,7 +183,7 @@ public class SimulacionController {
                             view.actualizarTiempoSabanero(turnoActual, nombre);
                             view.actualizarMatriz(matrizSimbolos, false);
                             if (turnoActual == 1) {
-                                guardarSnapshot(nombre, matrizSimbolos, snapshots);
+                                guardarSnapshot(view.crearSnapshot(nombre), snapshots);
                             }
                         });
                     }
@@ -215,11 +215,11 @@ public class SimulacionController {
         gView.setOnSiguiente(() -> Platform.runLater(() -> mostrarReportes(reportes)));
     }
 
-    private void guardarSnapshot(String nombre, char[][] matriz, List<EscenarioSnapshot> snaps) {
-        if (matriz == null || snaps == null) return;
-        boolean existe = snaps.stream().anyMatch(s -> s.getNombre().equalsIgnoreCase(nombre));
+    private void guardarSnapshot(EscenarioSnapshot snapshot, List<EscenarioSnapshot> snaps) {
+        if (snapshot == null || snaps == null) return;
+        boolean existe = snaps.stream().anyMatch(s -> s.getNombre().equalsIgnoreCase(snapshot.getNombre()));
         if (existe) return;
-        snaps.add(new EscenarioSnapshot(nombre, clonar(matriz)));
+        snaps.add(snapshot);
     }
 
     private char[][] clonar(char[][] src) {
