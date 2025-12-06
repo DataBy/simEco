@@ -1,47 +1,46 @@
 package com.mycompany.simulador.view;
 
-import com.mycompany.simulador.config.Constantes;
-import com.mycompany.simulador.config.RutasArchivos;
-import com.mycompany.simulador.utils.IconosUtils;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
+import com.mycompany.simulador.config.Constantes;
+import com.mycompany.simulador.config.RutasArchivos;
+import com.mycompany.simulador.model.ecosystem.Coordenada;
+import com.mycompany.simulador.services.simulacion.TurnoEvento;
+import com.mycompany.simulador.utils.AleatorioUtils;
+import com.mycompany.simulador.utils.IconosUtils;
+
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority; // <-- NUEVO IMPORT
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.stage.Screen; // <-- NUEVO IMPORT
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
+import javafx.stage.Screen;
 import javafx.util.Duration;
-
-import com.mycompany.simulador.utils.AleatorioUtils;
-import com.mycompany.simulador.model.ecosystem.Coordenada;
-import com.mycompany.simulador.services.simulacion.TurnoEvento;
 
 public class SimulacionView {
 
@@ -538,7 +537,7 @@ public class SimulacionView {
         // --- LÍMITE MÁXIMO ADAPTADO A PANTALLA ---
         double screenHeight = Screen.getPrimary().getVisualBounds().getHeight();
         double maxDesktop = Constantes.MATRIZ_TAM_CELDA; // valor base de escritorio
-        double maxLaptop  = 40;                          // más compacto en pantallas bajas
+        double maxLaptop  = 60;                          // más compacto en pantallas bajas
 
         // Si la pantalla es "baja" (típico laptop), usamos un máximo menor
         double max = (screenHeight <= 900) ? maxLaptop : maxDesktop;
