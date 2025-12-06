@@ -45,6 +45,7 @@ public class SimuladorService implements ISimulador {
 
         Ecosistema e = ecosistemaService.crearEcosistema(config);
         ReporteFinal reporteFinal = new ReporteFinal();
+        reporteFinal.setEscenario(config.getEscenario());
         int turnoExtincion = -1;
         java.util.List<TurnoEvento> eventosTurno = new java.util.ArrayList<>();
         int turnosEjecutados = 0;

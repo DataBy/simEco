@@ -8,6 +8,7 @@ public class ReporteFinal {
     private int terceraEspecieFinal;
     private int turnoExtincion; // -1 si no hubo
     private double porcentajeOcupacionFinal;
+    private String escenario;
 
     public int getTotalTurnos() { return totalTurnos; }
     public void setTotalTurnos(int totalTurnos) { this.totalTurnos = totalTurnos; }
@@ -28,4 +29,7 @@ public class ReporteFinal {
     public void setPorcentajeOcupacionFinal(double porcentajeOcupacionFinal) {
         this.porcentajeOcupacionFinal = porcentajeOcupacionFinal;
     }
+
+    public String getEscenario() { return escenario; }
+    public void setEscenario(String escenario) { this.escenario = escenario; }
 }

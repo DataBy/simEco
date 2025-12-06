@@ -8,7 +8,7 @@ import javafx.scene.chart.PieChart;
 
 public class GraficosService {
 
-    private static final double PREF_CHART_SIZE = 380;
+    private static final double PREF_CHART_SIZE = 180;
 
     public Node crearGraficoPastel(int valorA, int valorB,
                                    String etiquetaA, String etiquetaB) {
