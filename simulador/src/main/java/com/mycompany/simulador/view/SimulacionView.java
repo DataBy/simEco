@@ -885,6 +885,10 @@ public class SimulacionView {
         }
     }
 
+    public EscenarioSnapshot crearSnapshot(String nombre) {
+        return new EscenarioSnapshot(nombre, clonar(matrizBase), clonarIconos(iconCache));
+    }
+
     private char[][] matrizVacia() {
         char[][] m = new char[Constantes.MATRIZ_FILAS][Constantes.MATRIZ_COLUMNAS];
         for (int i = 0; i < Constantes.MATRIZ_FILAS; i++) {
@@ -900,6 +904,17 @@ public class SimulacionView {
         char[][] copia = new char[Constantes.MATRIZ_FILAS][Constantes.MATRIZ_COLUMNAS];
         for (int i = 0; i < Constantes.MATRIZ_FILAS; i++) {
             System.arraycopy(src[i], 0, copia[i], 0, Constantes.MATRIZ_COLUMNAS);
+        }
+        return copia;
+    }
+
+    private String[][] clonarIconos(String[][] src) {
+        if (src == null) return null;
+        String[][] copia = new String[Constantes.MATRIZ_FILAS][Constantes.MATRIZ_COLUMNAS];
+        for (int i = 0; i < Constantes.MATRIZ_FILAS; i++) {
+            for (int j = 0; j < Constantes.MATRIZ_COLUMNAS; j++) {
+                copia[i][j] = src[i][j];
+            }
         }
         return copia;
     }
