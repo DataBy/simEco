@@ -8,9 +8,11 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +27,7 @@ public class PdfService implements IReporteService {
 
     @Override
     public File generarReportePDF(ReporteFinal r) {
-        File pdf = AppConfig.getBaseData().resolve("reporte_simulacion.pdf").toFile();
+        File pdf = archivoUnico("reporte_simulacion");
         try (FileWriter fw = new FileWriter(pdf)) {
             fw.write("REPORTE DE SIMULACION\n\n");
             fw.write("Total de turnos: " + r.getTotalTurnos() + "\n");
@@ -46,7 +48,7 @@ public class PdfService implements IReporteService {
      */
     public File generarReporteSimulaciones(List<ReporteFinal> reportes) {
         if (reportes == null) reportes = Collections.emptyList();
-        File pdf = AppConfig.getBaseData().resolve("reporte_simulaciones.pdf").toFile();
+        File pdf = archivoUnico("reporte_simulaciones");
         Map<String, List<EstadoTurnoDetalle>> estados = cargarEstadosPorEscenario();
 
         List<String> lineas = new ArrayList<>();
@@ -82,6 +84,12 @@ public class PdfService implements IReporteService {
 
         generarPdfSimple(pdf.toPath(), lineas);
         return pdf;
+    }
+
+    private File archivoUnico(String prefijo) {
+        String stamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String nombre = prefijo + "_" + stamp + ".pdf";
+        return AppConfig.getBaseData().resolve(nombre).toFile();
     }
 
     private Map<String, List<EstadoTurnoDetalle>> cargarEstadosPorEscenario() {

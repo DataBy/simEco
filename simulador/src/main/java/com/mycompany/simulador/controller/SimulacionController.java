@@ -1,6 +1,7 @@
 package com.mycompany.simulador.controller;
 
 import java.awt.Desktop;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -15,6 +16,7 @@ import com.mycompany.simulador.interfaces.ISimulador;
 import com.mycompany.simulador.model.report.ReporteFinal;
 import com.mycompany.simulador.repository.EcossitemaRepositoryTXT;
 import com.mycompany.simulador.repository.EstadoTurnosRepositoryTXT;
+import com.mycompany.simulador.services.correo.CorreoService;
 import com.mycompany.simulador.services.reportes.PdfService;
 import com.mycompany.simulador.services.simulacion.SimuladorService;
 import com.mycompany.simulador.view.ResumenView;
@@ -34,6 +36,8 @@ public class SimulacionController {
     private final EstadoTurnosRepositoryTXT estadoRepo;
     private final String correoUsuario;
     private final PdfService pdfService = new PdfService();
+    private final CorreoService correoService = new CorreoService();
+    private File ultimoReportePdf;
 
     public SimulacionController(Stage stage, String correoUsuario) {
         this.stage = stage;
@@ -190,11 +194,30 @@ public class SimulacionController {
         List<ReporteFinal> reportesFinales = reportes;
         rView.setOnEnvioReporte(() -> Platform.runLater(() -> {
             try {
-                java.io.File pdf = pdfService.generarReporteSimulaciones(reportesFinales);
+                File pdf = pdfService.generarReporteSimulaciones(reportesFinales);
+                ultimoReportePdf = pdf;
                 DialogoConfirmacion.mostrar("Reporte generado en: " + pdf.getAbsolutePath());
                 abrirArchivo(pdf);
             } catch (Exception ex) {
                 DialogoConfirmacion.mostrar("No se pudo generar el reporte: " + ex.getMessage());
+            }
+        }));
+        rView.setOnEnviarCorreo(() -> Platform.runLater(() -> {
+            try {
+                if (ultimoReportePdf == null || !ultimoReportePdf.exists()) {
+                    DialogoConfirmacion.mostrar("Primero genera el reporte antes de enviarlo por correo.");
+                    return;
+                }
+                File pdf = ultimoReportePdf;
+                correoService.enviarCorreoConAdjunto(
+                        correoUsuario,
+                        "Reporte de simulacion",
+                        "Se adjunta el reporte generado en esta sesion.",
+                        pdf
+                );
+                DialogoConfirmacion.mostrar("Correo enviado a " + correoUsuario);
+            } catch (Exception ex) {
+                DialogoConfirmacion.mostrar("No se pudo enviar el correo: " + ex.getMessage());
             }
         }));
 

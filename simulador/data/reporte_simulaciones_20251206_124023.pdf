@@ -25,85 +25,85 @@ T*
 T*
 (Presas finales: 54) Tj
 T*
-(Depredadores finales: 9) Tj
+(Depredadores finales: 8) Tj
 T*
 (Tercera especie final: 0) Tj
 T*
 (Turno de extincion: N/A) Tj
 T*
-(Ocupacion final: 63,0%) Tj
+(Ocupacion final: 62,0%) Tj
 T*
 () Tj
 T*
 (  Turno 1 - Presas=29, Depredadores=26, Tercera=5, Ocupadas=60) Tj
 T*
-(    .P.DDT..PD) Tj
+(    .DPT...PDD) Tj
 T*
-(    DPTD.TP.DP) Tj
+(    DD..DTPD.P) Tj
 T*
-(    .P..DP..DP) Tj
+(    PDDP..PDP.) Tj
 T*
-(    .P.D.P.D.P) Tj
+(    ....TP..DD) Tj
 T*
-(    .DDP..PDPD) Tj
+(    ..DD..D.DT) Tj
 T*
-(    .T.DP.PDDD) Tj
+(    .DPDTPP.PP) Tj
 T*
-(    TP..D....D) Tj
+(    .DDDDP..PP) Tj
 T*
-(    D..PDDPPPP) Tj
+(    .PDP.P.PPP) Tj
 T*
-(    P.PDPPD..P) Tj
+(    ...P..P.P.) Tj
 T*
-(    .P.P..D...) Tj
+(    .DP.PDD..P) Tj
 T*
 () Tj
 T*
 (  Turno 2 - Presas=28, Depredadores=28, Tercera=5, Ocupadas=61) Tj
 T*
-(    .P.DDT..PD) Tj
+(    .DPT..P.DD) Tj
 T*
-(    DPTDDTP.DD) Tj
+(    DD..DTPD.P) Tj
 T*
-(    .P..DP..DP) Tj
+(    PDDP..PDP.) Tj
 T*
-(    .P.D.P.D.P) Tj
+(    ....TP..DD) Tj
 T*
-(    .DDP..PDPD) Tj
+(    ..DD..D.DT) Tj
 T*
-(    .T.DP.PDDD) Tj
+(    .DDDTPP.PP) Tj
 T*
-(    TP..D....D) Tj
+(    DDDDDP..PP) Tj
 T*
-(    D..PDDPPPP) Tj
+(    .PDP.P.PPP) Tj
 T*
-(    P.PDPPD..P) Tj
+(    ...P..P.P.) Tj
 T*
-(    .PP...D...) Tj
+(    .DP.PDD..P) Tj
 T*
 () Tj
 T*
-(  Turno 3 - Presas=54, Depredadores=9, Tercera=0, Ocupadas=63) Tj
+(  Turno 3 - Presas=54, Depredadores=8, Tercera=0, Ocupadas=62) Tj
 T*
-(    PP.DDD..PD) Tj
+(    .PP..PPP..) Tj
 T*
-(    PP..DPP.PD) Tj
+(    ......PPPP) Tj
 T*
-(    .PP.DD..PP) Tj
+(    PP.PP.PPPP) Tj
 T*
-(    .PP.PP..PP) Tj
+(    ..P.PP....) Tj
 T*
-(    ...PPPP.P.) Tj
+(    P.D..P..PP) Tj
 T*
-(    .P..PPPPP.) Tj
+(    .DD..PPPPP) Tj
 T*
-(    .P.D..PP.P) Tj
+(    DDDPPP.PPP) Tj
 T*
-(    P.PP..PPPP) Tj
+(    .P.P.PDPPP) Tj
 T*
-(    P.PPPP..PP) Tj
+(    .PPPPPDPPP) Tj
 T*
-(    PPPPPP...P) Tj
+(    ..P.PP.PP.) Tj
 T*
 () Tj
 T*
@@ -129,73 +129,73 @@ T*
 T*
 (  Turno 1 - Presas=29, Depredadores=26, Tercera=5, Ocupadas=60) Tj
 T*
-(    .P.P.D.DP.) Tj
+(    TPPP.TDPPD) Tj
 T*
-(    .DDTPDDP..) Tj
+(    .PT.P.P.P.) Tj
 T*
-(    DDP.DPD..P) Tj
+(    .DDPD.PP..) Tj
 T*
-(    .D.PPPP...) Tj
+(    .D.PDDP.PP) Tj
 T*
-(    ...PPDDDDP) Tj
+(    .D..D.PP.D) Tj
 T*
-(    P.....D.DD) Tj
+(    DD..DPPD.P) Tj
 T*
-(    TPDD.T..DP) Tj
+(    P.D.DP.DP.) Tj
 T*
-(    DPDP...PP.) Tj
+(    .T...D....) Tj
 T*
-(    ..PPDD...P) Tj
+(    D...D.D..D) Tj
 T*
-(    T.P.DPPTP.) Tj
+(    PDPT.PPPDD) Tj
 T*
 () Tj
 T*
 (  Turno 2 - Presas=28, Depredadores=28, Tercera=5, Ocupadas=61) Tj
 T*
-(    .D.P.D.DP.) Tj
+(    TPPP.TDPPD) Tj
 T*
-(    .DDTPDDP..) Tj
+(    .PT.P.P.P.) Tj
 T*
-(    DDP.DPD..P) Tj
+(    .DDPD.PP..) Tj
 T*
-(    .D.PPPPD..) Tj
+(    .D..DDP.PP) Tj
 T*
-(    ...PPDDDDP) Tj
+(    .D.PD.PP.D) Tj
 T*
-(    P.....D.DD) Tj
+(    DD.DDPPD.P) Tj
 T*
-(    TPDD.T..DP) Tj
+(    P.D.DP.DP.) Tj
 T*
-(    DPDP...PP.) Tj
+(    .T...D....) Tj
 T*
-(    ..PPDD..PP) Tj
+(    D...D.D..D) Tj
 T*
-(    T.P.DPPT..) Tj
+(    DDPT.PPPDD) Tj
 T*
 () Tj
 T*
 (  Turno 3 - Presas=54, Depredadores=9, Tercera=0, Ocupadas=63) Tj
 T*
-(    .DDPP..PP.) Tj
+(    PPPP...PPP) Tj
 T*
-(    .D..PP.PP.) Tj
+(    .PPPPPPPPP) Tj
 T*
-(    ..PPPDD..P) Tj
+(    .P.PDDPPP.) Tj
 T*
-(    ..PPPPPD.P) Tj
+(    ...P.PPPPP) Tj
 T*
-(    P.PPPPPDDP) Tj
+(    ..PPDPPP.P) Tj
 T*
-(    PP..P..D.P) Tj
+(    ...DDPPPPP) Tj
 T*
-(    .P......PP) Tj
+(    PP..DPPPP.) Tj
 T*
-(    .PPPP.PPPP) Tj
+(    P....P....) Tj
 T*
-(    .PPP...PPP) Tj
+(    D....PPP..) Tj
 T*
-(    .PPPPPPP.P) Tj
+(    DDPP.PPP..) Tj
 T*
 () Tj
 T*
@@ -221,73 +221,73 @@ T*
 T*
 (  Turno 1 - Presas=29, Depredadores=26, Tercera=5, Ocupadas=60) Tj
 T*
-(    .PDPDPDDD.) Tj
+(    T..DP..DD.) Tj
 T*
-(    DPTDDDD..P) Tj
+(    P.P.....DD) Tj
 T*
-(    .T.D..PDPD) Tj
+(    PPPDDPDDD.) Tj
 T*
-(    PP.DPP...D) Tj
+(    ...PPP.D.T) Tj
 T*
-(    ..PP..DT.D) Tj
+(    PPD.PP.PP.) Tj
 T*
-(    .P..D.D..T) Tj
+(    DTPDP..D..) Tj
 T*
-(    PPP.P....P) Tj
+(    .P.PD..TDP) Tj
 T*
-(    .DTD.D.PDP) Tj
+(    ..P.PP.DDD) Tj
 T*
-(    DDP.DP..PP) Tj
+(    ..T.PDD.PP) Tj
 T*
-(    ..P..PP..P) Tj
+(    .PDD.D.PD.) Tj
 T*
 () Tj
 T*
 (  Turno 2 - Presas=28, Depredadores=28, Tercera=5, Ocupadas=61) Tj
 T*
-(    .PDPDPDDD.) Tj
+(    T..DP..DD.) Tj
 T*
-(    DPTDDDD..P) Tj
+(    P.P..D..DD) Tj
 T*
-(    .T.D..PDPD) Tj
+(    PPPDDD.DD.) Tj
 T*
-(    PP..PP...D) Tj
+(    ...PPPDD.T) Tj
 T*
-(    ..PDD.DT.D) Tj
+(    PPD.PP.PP.) Tj
 T*
-(    .P..D.D..T) Tj
+(    DT.DP..D..) Tj
 T*
-(    PPP.P....P) Tj
+(    .PPPD..TDP) Tj
 T*
-(    .DTD.D.PDP) Tj
+(    ..P.PP.DDD) Tj
 T*
-(    DDP.DP.P.P) Tj
+(    ..T.PDD.PP) Tj
 T*
-(    .DP..PP..P) Tj
+(    .PDD.D.PD.) Tj
 T*
 () Tj
 T*
 (  Turno 3 - Presas=54, Depredadores=9, Tercera=0, Ocupadas=63) Tj
 T*
-(    .DDPPP...P) Tj
+(    ..P.P.....) Tj
 T*
-(    .PP..P..PP) Tj
+(    P.PPPD....) Tj
 T*
-(    .P....PPPP) Tj
+(    PPPPPDD...) Tj
 T*
-(    PPPPPPP...) Tj
+(    PPPPPPD.P.) Tj
 T*
-(    PPPDD.....) Tj
+(    PP.PPPPPP.) Tj
 T*
-(    .PPD.....P) Tj
+(    PPPPDP....) Tj
 T*
-(    PPPPP....P) Tj
+(    PPPPD.P.DP) Tj
 T*
-(    PDP..P.PPP) Tj
+(    ..PPPPPDDP) Tj
 T*
-(    DDPP.PPPPP) Tj
+(    ..P.PP.PPP) Tj
 T*
-(    .DPPPPPPPP) Tj
+(    .PP....PPP) Tj
 T*
 () Tj
 T*
