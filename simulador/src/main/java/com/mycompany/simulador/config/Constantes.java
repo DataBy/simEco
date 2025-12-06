@@ -11,7 +11,8 @@ public final class Constantes {
     // Matriz del ecosistema
     public static final int MATRIZ_FILAS     = 10;
     public static final int MATRIZ_COLUMNAS  = 10;
-    public static final int MATRIZ_TAM_CELDA = 102;
+    // Tamaño base reducido para pantallas de laptop; se escala dinámicamente en la vista.
+    public static final int MATRIZ_TAM_CELDA = 70;
 
     // Delay entre turnos (ms)
     public static final int DELAY_TURNO_MS = 4500;
