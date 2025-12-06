@@ -537,7 +537,7 @@ public class SimulacionView {
         // --- LÍMITE MÁXIMO ADAPTADO A PANTALLA ---
         double screenHeight = Screen.getPrimary().getVisualBounds().getHeight();
         double maxDesktop = Constantes.MATRIZ_TAM_CELDA; // valor base de escritorio
-        double maxLaptop  = 60;                          // más compacto en pantallas bajas
+        double maxLaptop  = 80;                          // más compacto en pantallas bajas
 
         // Si la pantalla es "baja" (típico laptop), usamos un máximo menor
         double max = (screenHeight <= 900) ? maxLaptop : maxDesktop;
