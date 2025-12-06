@@ -165,6 +165,15 @@ public class PdfService implements IReporteService {
      * Genera un PDF sencillo (texto) con una sola pУgina usando comandos bбsicos.
      */
     private void generarPdfSimple(Path destino, List<String> lineas) {
+        final int maxLineasPorPagina = 50; // margen superior/inferior para que no se corten
+        List<List<String>> paginas = new ArrayList<>();
+        for (int i = 0; i < lineas.size(); i += maxLineasPorPagina) {
+            paginas.add(new ArrayList<>(lineas.subList(i, Math.min(lineas.size(), i + maxLineasPorPagina))));
+        }
+        if (paginas.isEmpty()) {
+            paginas.add(List.of(""));
+        }
+
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             List<Integer> offsets = new ArrayList<>();
             java.util.function.Consumer<String> write = s -> {
@@ -174,43 +183,59 @@ public class PdfService implements IReporteService {
 
             write.accept("%PDF-1.4\n");
 
-            // Obj1: catalog
+            // Objetos: 1=Catalog, 2=Pages, 3..(2+paginas) Page, contenidos luego, fuente al final
+            int basePageId = 3;
+            int baseContentId = basePageId + paginas.size();
+            int fontId = baseContentId + paginas.size();
+
+            // Catalog
             offsets.add(out.size());
             write.accept("1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n");
 
-            // Obj2: pages
+            // Pages
             offsets.add(out.size());
-            write.accept("2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n");
-
-            // Obj3: page
-            offsets.add(out.size());
-            write.accept("3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\nendobj\n");
-
-            // Obj4: content stream
-            StringBuilder contenido = new StringBuilder();
-            contenido.append("BT\n/F1 12 Tf\n12 TL\n50 750 Td\n");
-            for (String l : lineas) {
-                contenido.append("(").append(escapar(l)).append(") Tj\nT*\n");
+            StringBuilder kids = new StringBuilder();
+            for (int i = 0; i < paginas.size(); i++) {
+                kids.append(" ").append(basePageId + i).append(" 0 R");
             }
-            contenido.append("ET\n");
-            byte[] contenidoBytes = contenido.toString().getBytes(StandardCharsets.US_ASCII);
+            write.accept("2 0 obj\n<< /Type /Pages /Kids[" + kids + "] /Count " + paginas.size() + " >>\nendobj\n");
 
-            offsets.add(out.size());
-            write.accept("4 0 obj\n<< /Length " + contenidoBytes.length + " >>\nstream\n");
-            try { out.write(contenidoBytes); } catch (IOException ignored) { }
-            write.accept("endstream\nendobj\n");
+            // Pages + contents
+            for (int i = 0; i < paginas.size(); i++) {
+                offsets.add(out.size());
+                int pageId = basePageId + i;
+                int contentId = baseContentId + i;
+                write.accept(pageId + " 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents " + contentId + " 0 R /Resources << /Font << /F1 " + fontId + " 0 R >> >> >>\nendobj\n");
+            }
 
-            // Obj5: font
+            for (int i = 0; i < paginas.size(); i++) {
+                offsets.add(out.size());
+                StringBuilder contenido = new StringBuilder();
+                contenido.append("BT\n/F1 12 Tf\n12 TL\n50 750 Td\n");
+                for (String l : paginas.get(i)) {
+                    contenido.append("(").append(escapar(l)).append(") Tj\nT*\n");
+                }
+                contenido.append("ET\n");
+                byte[] contenidoBytes = contenido.toString().getBytes(StandardCharsets.US_ASCII);
+                int contentId = baseContentId + i;
+                write.accept(contentId + " 0 obj\n<< /Length " + contenidoBytes.length + " >>\nstream\n");
+                try { out.write(contenidoBytes); } catch (IOException ignored) { }
+                write.accept("endstream\nendobj\n");
+            }
+
+            // Fuente
             offsets.add(out.size());
-            write.accept("5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n");
+            write.accept(fontId + " 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n");
 
             // xref
+            int totalObjs = 2 + (paginas.size() * 2) + 1; // catalog + pages + (page+content)*n + font
             int xrefStart = out.size();
-            write.accept("xref\n0 6\n0000000000 65535 f \n");
+            write.accept("xref\n0 " + (totalObjs + 1) + "\n");
+            write.accept("0000000000 65535 f \n");
             for (int off : offsets) {
                 write.accept(String.format("%010d 00000 n \n", off));
             }
-            write.accept("trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n");
+            write.accept("trailer\n<< /Size " + (totalObjs + 1) + " /Root 1 0 R >>\nstartxref\n");
             write.accept(String.valueOf(xrefStart));
             write.accept("\n%%EOF");
 
