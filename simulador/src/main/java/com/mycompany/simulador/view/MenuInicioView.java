@@ -101,3 +101,4 @@ public class MenuInicioView {
     public void setOnExit(Runnable r)   { btnExit.setOnAction(e -> r.run()); }
 }
 
+

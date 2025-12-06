@@ -277,12 +277,12 @@ public class SimulacionView {
         // PANEL CENTRAL: MATRIZ RESPONSIVE (SIN FONDO CAFÉ)
         // ======================================================
         panelCentro = new StackPane();
-        panelCentro.setPadding(new Insets(4));
+        panelCentro.setPadding(new Insets(1));
         panelCentro.setStyle("-fx-background-color: transparent;");
 
         gridSimulacion = new GridPane();
-        gridSimulacion.setHgap(2);
-        gridSimulacion.setVgap(2);
+        gridSimulacion.setHgap(1);
+        gridSimulacion.setVgap(1);
         gridSimulacion.setAlignment(Pos.CENTER);
 
         // Celdas de la matriz
@@ -516,28 +516,35 @@ public class SimulacionView {
     // Lógica de tamaño RESPONSIVE de las celdas
     // ----------------------------------------------------------
     private void ajustarTamanoCeldas(StackPane panelCentro, GridPane grid) {
-        double anchoDisponible = panelCentro.getWidth() - grid.getInsets().getLeft() - grid.getInsets().getRight();
-        double altoDisponible  = panelCentro.getHeight() - grid.getInsets().getTop() - grid.getInsets().getBottom();
+        Insets padding = panelCentro.getPadding();
+        double anchoDisponible = panelCentro.getWidth()
+                - padding.getLeft() - padding.getRight()
+                - grid.getInsets().getLeft() - grid.getInsets().getRight();
+        double altoDisponible  = panelCentro.getHeight()
+                - padding.getTop() - padding.getBottom()
+                - grid.getInsets().getTop() - grid.getInsets().getBottom();
 
         if (anchoDisponible <= 0 || altoDisponible <= 0) {
             return;
         }
 
-        double sizeByWidth  = anchoDisponible / Constantes.MATRIZ_COLUMNAS;
-        double sizeByHeight = altoDisponible / Constantes.MATRIZ_FILAS;
+        double hgap = grid.getHgap();
+        double vgap = grid.getVgap();
+        double sizeByWidth  = (anchoDisponible - (Constantes.MATRIZ_COLUMNAS - 1) * hgap) / Constantes.MATRIZ_COLUMNAS;
+        double sizeByHeight = (altoDisponible  - (Constantes.MATRIZ_FILAS - 1)    * vgap) / Constantes.MATRIZ_FILAS;
 
         double size = Math.min(sizeByWidth, sizeByHeight);
 
         // --- LÍMITE MÁXIMO ADAPTADO A PANTALLA ---
         double screenHeight = Screen.getPrimary().getVisualBounds().getHeight();
-        double maxDesktop = Constantes.MATRIZ_TAM_CELDA; // 102 px
-        double maxLaptop  = 80;                          // más pequeño en pantallas bajas
+        double maxDesktop = Constantes.MATRIZ_TAM_CELDA; // valor base de escritorio
+        double maxLaptop  = 40;                          // más compacto en pantallas bajas
 
         // Si la pantalla es "baja" (típico laptop), usamos un máximo menor
         double max = (screenHeight <= 900) ? maxLaptop : maxDesktop;
 
         if (size > max) size = max;
-        if (size < 10)  size = 10;   // tamaño mínimo de seguridad
+        if (size < 5)  size = 5;   // tamaño mínimo de seguridad
 
         cellSize.set(size);
     }
@@ -547,8 +554,8 @@ public class SimulacionView {
     // ----------------------------------------------------------
     private void construirEditorPersonalizado() {
         gridPersonalizado = new GridPane();
-        gridPersonalizado.setHgap(2);
-        gridPersonalizado.setVgap(2);
+        gridPersonalizado.setHgap(1);
+        gridPersonalizado.setVgap(1);
         gridPersonalizado.setAlignment(Pos.CENTER);
 
         for (int i = 0; i < Constantes.MATRIZ_FILAS; i++) {
