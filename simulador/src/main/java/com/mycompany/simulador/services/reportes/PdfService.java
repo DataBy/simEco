@@ -47,6 +47,13 @@ public class PdfService implements IReporteService {
      * Incluye resumen por simulacion y el detalle de cada turno con su matriz final.
      */
     public File generarReporteSimulaciones(List<ReporteFinal> reportes) {
+        return generarReporteSimulaciones(reportes, "");
+    }
+
+    /**
+     * Igual que el metodo original pero permitiendo anexar un analisis comparativo al final.
+     */
+    public File generarReporteSimulaciones(List<ReporteFinal> reportes, String analisisFinal) {
         if (reportes == null) reportes = Collections.emptyList();
         File pdf = archivoUnico("reporte_simulaciones");
         Map<String, List<EstadoTurnoDetalle>> estados = cargarEstadosPorEscenario();
@@ -80,6 +87,15 @@ public class PdfService implements IReporteService {
             lineas.add("------------------------------------------------------------");
             lineas.add("");
             index++;
+        }
+
+        if (analisisFinal != null && !analisisFinal.isBlank()) {
+            lineas.add("ANALISIS COMPARATIVO FINAL");
+            lineas.add("---------------------------");
+            for (String l : analisisFinal.split("\\r?\\n")) {
+                lineas.add(l);
+            }
+            lineas.add("");
         }
 
         generarPdfSimple(pdf.toPath(), lineas);

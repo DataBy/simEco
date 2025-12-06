@@ -38,6 +38,7 @@ public class SimulacionController {
     private final PdfService pdfService = new PdfService();
     private final CorreoService correoService = new CorreoService();
     private File ultimoReportePdf;
+    private String ultimoAnalisis = "";
 
     public SimulacionController(Stage stage, String correoUsuario) {
         this.stage = stage;
@@ -192,9 +193,10 @@ public class SimulacionController {
 
         rView.setOnInicio(() -> Platform.runLater(() -> new MenuInicioController(stage)));
         List<ReporteFinal> reportesFinales = reportes;
+        ultimoAnalisis = construirAnalisisComparativo(reportesFinales);
         rView.setOnEnvioReporte(() -> Platform.runLater(() -> {
             try {
-                File pdf = pdfService.generarReporteSimulaciones(reportesFinales);
+                File pdf = pdfService.generarReporteSimulaciones(reportesFinales, ultimoAnalisis);
                 ultimoReportePdf = pdf;
                 DialogoConfirmacion.mostrar("Reporte generado en: " + pdf.getAbsolutePath());
                 abrirArchivo(pdf);
@@ -247,6 +249,7 @@ public class SimulacionController {
                 ocupadas, vacias
         );
         rView.actualizarComparativo(reportes);
+        rView.actualizarAnalisisFinal(ultimoAnalisis);
     }
 
     /**
@@ -290,6 +293,131 @@ public class SimulacionController {
         }
 
         return lista;
+    }
+
+    /**
+     * Construye un analisis textual que responde a las preguntas del usuario
+     * usando los resultados finales y la historia de turnos guardada.
+     */
+    private String construirAnalisisComparativo(List<ReporteFinal> reportes) {
+        if (reportes == null || reportes.isEmpty()) {
+            return "Sin datos para analizar.";
+        }
+
+        List<com.mycompany.simulador.dto.EstadoTurnoDTO> estados = estadoRepo.cargarEstados();
+        Map<String, com.mycompany.simulador.dto.EstadoTurnoDTO> primerTurno = new LinkedHashMap<>();
+        Map<String, com.mycompany.simulador.dto.EstadoTurnoDTO> ultimoTurno = new LinkedHashMap<>();
+        for (com.mycompany.simulador.dto.EstadoTurnoDTO e : estados) {
+            primerTurno.putIfAbsent(e.getEscenario(), e);
+            ultimoTurno.put(e.getEscenario(), e);
+        }
+
+        Map<String, ReporteFinal> porEscenario = new LinkedHashMap<>();
+        for (ReporteFinal r : reportes) {
+            porEscenario.put(r.getEscenario(), r);
+        }
+
+        String[] orden = new String[]{"VERANO", "PRIMAVERA", "INVIERNO"};
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("=== Escenarios por estacion ===\n");
+        for (String esc : orden) {
+            ReporteFinal r = porEscenario.get(esc);
+            if (r == null) continue;
+            com.mycompany.simulador.dto.EstadoTurnoDTO p = primerTurno.get(esc);
+            com.mycompany.simulador.dto.EstadoTurnoDTO u = ultimoTurno.get(esc);
+            int presasIni = p != null ? p.getPresas() : r.getPresasFinales();
+            int depIni = p != null ? p.getDepredadores() : r.getDepredadoresFinales();
+            int presasFin = r.getPresasFinales();
+            int depFin = r.getDepredadoresFinales();
+
+            sb.append(icono(esc)).append(" ").append(esc).append("\n");
+            sb.append(" - Equilibrio: ").append(describirEquilibrio(presasFin, depFin)).append("\n");
+            sb.append(" - Variacion poblacional: presas ").append(delta(presasIni, presasFin))
+                    .append(", depredadores ").append(delta(depIni, depFin)).append("\n");
+            sb.append(" - Extincion de presas: ").append(describirExtincion(presasFin, r.getTurnoExtincion())).append("\n");
+            sb.append(" - Extincion de depredadores: ").append(depFin == 0 ? "si (hambre tras falta de presas)" : "no").append("\n");
+            sb.append(" - Ocupacion final: ").append(String.format("%.1f%%", r.getPorcentajeOcupacionFinal())).append("\n");
+        }
+
+        // Analisis global
+        double ocupProm = reportes.stream().mapToDouble(ReporteFinal::getPorcentajeOcupacionFinal).average().orElse(0);
+        boolean hayExtincionPresas = reportes.stream().anyMatch(r -> r.getPresasFinales() == 0);
+        boolean hayExtincionDep = reportes.stream().anyMatch(r -> r.getDepredadoresFinales() == 0);
+        String escenarioEstable = detectarMasEstable(reportes);
+
+        sb.append("\n=== Resumen global ===\n");
+        sb.append("1) Ecosistema equilibrado: ").append(hayEquilibrio(reportes)
+                ? "se mantiene sin extinciones rapidas" : "tiende a dominancia de una especie").append("\n");
+        sb.append("   Patrones: presas ").append(tendenciaGlobal(reportes, true))
+                .append(", depredadores ").append(tendenciaGlobal(reportes, false)).append("\n");
+        sb.append("2) Depredadores dominantes: ").append(hayExtincionPresas
+                ? "pueden extinguir presas en pocos turnos" : "no extinguieron presas en esta corrida").append("\n");
+        sb.append("   Depredadores luego: ").append(hayExtincionDep ? "colapsan por hambre si no quedan presas" : "se sostienen").append("\n");
+        sb.append("3) Presas dominantes: ocupacion alta -> ").append(String.format("%.1f%% promedio", ocupProm))
+                .append("; colapso de depredadores: ").append(hayExtincionDep ? "si" : "no observado").append("\n");
+        sb.append("4) Estabilidad: mejor en ").append(escenarioEstable)
+                .append("; factor clave: balance inicial + reglas de reproduccion (presas 2 turnos, depredadores requieren caza)\n");
+
+        return sb.toString();
+    }
+
+    private String describirEquilibrio(int presasFin, int depFin) {
+        if (presasFin == 0 && depFin == 0) return "colapso total";
+        if (presasFin == 0) return "dominan depredadores (presas extintas)";
+        if (depFin == 0) return "dominan presas (depredadores extintos)";
+        double ratio = (depFin == 0) ? presasFin : (double) presasFin / depFin;
+        if (ratio > 1.5) return "ventaja de presas";
+        if (ratio < 0.7) return "ventaja de depredadores";
+        return "coexistencia balanceada";
+    }
+
+    private String delta(int ini, int fin) {
+        int d = fin - ini;
+        if (d == 0) return "sin cambio";
+        return (d > 0 ? "+" : "") + d;
+    }
+
+    private String describirExtincion(int presasFin, int turnoExt) {
+        if (presasFin == 0) {
+            return turnoExt < 0 ? "si (sin turno registrado)" : ("si, turno " + turnoExt);
+        }
+        return "no";
+    }
+
+    private boolean hayEquilibrio(List<ReporteFinal> reportes) {
+        return reportes.stream().anyMatch(r -> r.getPresasFinales() > 0 && r.getDepredadoresFinales() > 0);
+    }
+
+    private String tendenciaGlobal(List<ReporteFinal> reportes, boolean presas) {
+        double avg = reportes.stream()
+                .mapToInt(presas ? ReporteFinal::getPresasFinales : ReporteFinal::getDepredadoresFinales)
+                .average().orElse(0);
+        if (avg == 0) return "extincion";
+        if (avg > 40) return "expansion";
+        if (avg > 15) return "moderada";
+        return "en descenso";
+    }
+
+    private String detectarMasEstable(List<ReporteFinal> reportes) {
+        if (reportes.isEmpty()) return "--";
+        ReporteFinal mejor = reportes.get(0);
+        for (ReporteFinal r : reportes) {
+            int vivos = Math.min(r.getPresasFinales(), r.getDepredadoresFinales());
+            int mejorVivos = Math.min(mejor.getPresasFinales(), mejor.getDepredadoresFinales());
+            if (vivos > mejorVivos) mejor = r;
+        }
+        return mejor.getEscenario() == null ? "--" : mejor.getEscenario();
+    }
+
+    private String icono(String estacion) {
+        if (estacion == null) return "�";
+        return switch (estacion.toUpperCase()) {
+            case "VERANO" -> "☀";
+            case "PRIMAVERA" -> "🌸";
+            case "INVIERNO" -> "❄";
+            default -> "•";
+        };
     }
 
     private void abrirArchivo(java.io.File archivo) {

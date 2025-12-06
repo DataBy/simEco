@@ -1,0 +1,304 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 4215 >>
+stream
+BT
+/F1 12 Tf
+12 TL
+50 750 Td
+(REPORTE DE SIMULACIONES) Tj
+T*
+() Tj
+T*
+(Simulacion 1 - VERANO) Tj
+T*
+(Turnos ejecutados: 2) Tj
+T*
+(Presas finales: 28) Tj
+T*
+(Depredadores finales: 28) Tj
+T*
+(Tercera especie final: 5) Tj
+T*
+(Turno de extincion: N/A) Tj
+T*
+(Ocupacion final: 61,0%) Tj
+T*
+() Tj
+T*
+(  Turno 1 - Presas=29, Depredadores=26, Tercera=5, Ocupadas=60) Tj
+T*
+(    D....P...D) Tj
+T*
+(    P.T.DPPPTP) Tj
+T*
+(    PPPD..PDPD) Tj
+T*
+(    D.DTDDDP..) Tj
+T*
+(    T...D..P..) Tj
+T*
+(    .DPD.DP.DD) Tj
+T*
+(    .DPD..D..P) Tj
+T*
+(    TDD.D.PP..) Tj
+T*
+(    DPPP.P..DP) Tj
+T*
+(    .P.P.DPPP.) Tj
+T*
+() Tj
+T*
+(  Turno 2 - Presas=28, Depredadores=28, Tercera=5, Ocupadas=61) Tj
+T*
+(    D....P...D) Tj
+T*
+(    P.T.DPPPTP) Tj
+T*
+(    PPPD..PDPD) Tj
+T*
+(    D.DTDDDP..) Tj
+T*
+(    T...D..P..) Tj
+T*
+(    .DDD.DP.DD) Tj
+T*
+(    DDPD..D..P) Tj
+T*
+(    TDD.D.PP..) Tj
+T*
+(    DP.P.P..DP) Tj
+T*
+(    .PPP.DPPP.) Tj
+T*
+() Tj
+T*
+(------------------------------------------------------------) Tj
+T*
+() Tj
+T*
+(Simulacion 2 - PRIMAVERA) Tj
+T*
+(Turnos ejecutados: 2) Tj
+T*
+(Presas finales: 28) Tj
+T*
+(Depredadores finales: 28) Tj
+T*
+(Tercera especie final: 5) Tj
+T*
+(Turno de extincion: N/A) Tj
+T*
+(Ocupacion final: 61,0%) Tj
+T*
+() Tj
+T*
+(  Turno 1 - Presas=29, Depredadores=26, Tercera=5, Ocupadas=60) Tj
+T*
+(    PTDDDDP.DT) Tj
+T*
+(    ..D...DP..) Tj
+T*
+(    D..PDP.TP.) Tj
+T*
+(    ..P.PDD..P) Tj
+T*
+(    ..DTP.PD..) Tj
+T*
+(    .PPP..DD..) Tj
+T*
+(    P.P..DPPPD) Tj
+T*
+(    DP.D..DD..) Tj
+T*
+(    DP..PDPTPD) Tj
+T*
+(    D.PP.PP.DP) Tj
+T*
+() Tj
+T*
+(  Turno 2 - Presas=28, Depredadores=28, Tercera=5, Ocupadas=61) Tj
+T*
+(    PTDDDDP.DT) Tj
+T*
+(    ..DD.PDP..) Tj
+T*
+(    D..PD..TP.) Tj
+T*
+(    ..P.PDD..P) Tj
+T*
+(    ..DTP.PD..) Tj
+T*
+(    .PPP..DD..) Tj
+T*
+(    P.P..DPDPD) Tj
+T*
+(    DP.D..DD..) Tj
+T*
+(    DP..PDPTPD) Tj
+T*
+(    D.PP.PP.DP) Tj
+T*
+() Tj
+T*
+(------------------------------------------------------------) Tj
+T*
+() Tj
+T*
+(Simulacion 3 - INVIERNO) Tj
+T*
+(Turnos ejecutados: 2) Tj
+T*
+(Presas finales: 28) Tj
+T*
+(Depredadores finales: 28) Tj
+T*
+(Tercera especie final: 5) Tj
+T*
+(Turno de extincion: N/A) Tj
+T*
+(Ocupacion final: 61,0%) Tj
+T*
+() Tj
+T*
+(  Turno 1 - Presas=29, Depredadores=26, Tercera=5, Ocupadas=60) Tj
+T*
+(    .PD.DPP.PT) Tj
+T*
+(    DD.P...D.T) Tj
+T*
+(    .DDPPPP.P.) Tj
+T*
+(    PPD.DDP.PD) Tj
+T*
+(    T..PDDPP..) Tj
+T*
+(    DP.PD....D) Tj
+T*
+(    DPD..PT.D.) Tj
+T*
+(    .PDP.D..P.) Tj
+T*
+(    PPD.PDDP..) Tj
+T*
+(    ...T..D.PD) Tj
+T*
+() Tj
+T*
+(  Turno 2 - Presas=28, Depredadores=28, Tercera=5, Ocupadas=61) Tj
+T*
+(    .PD.DP..PT) Tj
+T*
+(    DD.P..PD.T) Tj
+T*
+(    .DDPPPP.P.) Tj
+T*
+(    PPD.DDP.D.) Tj
+T*
+(    T..PDDPPD.) Tj
+T*
+(    DP.PD....D) Tj
+T*
+(    DPD..PT.D.) Tj
+T*
+(    .PDP.DD.P.) Tj
+T*
+(    PPD.PDDP..) Tj
+T*
+(    ...T..D.PD) Tj
+T*
+() Tj
+T*
+(------------------------------------------------------------) Tj
+T*
+() Tj
+T*
+(ANALISIS COMPARATIVO FINAL) Tj
+T*
+(---------------------------) Tj
+T*
+(=== Escenarios por estacion ===) Tj
+T*
+(? VERANO) Tj
+T*
+( - Equilibrio: coexistencia balanceada) Tj
+T*
+( - Variacion poblacional: presas -1, depredadores +2) Tj
+T*
+( - Extincion de presas: no) Tj
+T*
+( - Extincion de depredadores: no) Tj
+T*
+( - Ocupacion final: 61,0%) Tj
+T*
+(? PRIMAVERA) Tj
+T*
+( - Equilibrio: coexistencia balanceada) Tj
+T*
+( - Variacion poblacional: presas -1, depredadores +2) Tj
+T*
+( - Extincion de presas: no) Tj
+T*
+( - Extincion de depredadores: no) Tj
+T*
+( - Ocupacion final: 61,0%) Tj
+T*
+(? INVIERNO) Tj
+T*
+( - Equilibrio: coexistencia balanceada) Tj
+T*
+( - Variacion poblacional: presas -1, depredadores +2) Tj
+T*
+( - Extincion de presas: no) Tj
+T*
+( - Extincion de depredadores: no) Tj
+T*
+( - Ocupacion final: 61,0%) Tj
+T*
+() Tj
+T*
+(=== Resumen global ===) Tj
+T*
+(1\) Ecosistema equilibrado: se mantiene sin extinciones rapidas) Tj
+T*
+(   Patrones: presas moderada, depredadores moderada) Tj
+T*
+(2\) Depredadores dominantes: no extinguieron presas en esta corrida) Tj
+T*
+(   Depredadores luego: se sostienen) Tj
+T*
+(3\) Presas dominantes: ocupacion alta -> 61,0% promedio; colapso de depredadores: no observado) Tj
+T*
+(4\) Estabilidad: mejor en VERANO; factor clave: balance inicial + reglas de reproduccion \(presas 2 turnos, depredadores requieren caza\)) Tj
+T*
+() Tj
+T*
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000004507 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+4577
+%%EOF
