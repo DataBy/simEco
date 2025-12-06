@@ -53,6 +53,7 @@ public class SimulacionController {
         }));
         view.setOnMutacion(() -> Platform.runLater(view::agregarMutacion));
         view.setOnTerceraEspecie(() -> Platform.runLater(view::agregarTerceraEspecieMixta));
+        view.setOnEscenarioPersonalizado(() -> Platform.runLater(view::mostrarEditorPersonalizado));
         view.setOnInicio(() -> Platform.runLater(() -> new MenuInicioController(stage)));
         view.setOnSalir(Platform::exit);
     }
@@ -101,19 +102,68 @@ public class SimulacionController {
         return dto;
     }
 
+    private List<String> definirOrdenPersonalizada(String[][] elementos) {
+        if (elementos == null) {
+            return List.of("VERANO", "PRIMAVERA", "INVIERNO");
+        }
+        int ver = 0, pri = 0, inv = 0;
+        for (int i = 0; i < elementos.length; i++) {
+            for (int j = 0; j < elementos[i].length; j++) {
+                String val = elementos[i][j];
+                if (val == null) continue;
+                switch (val.toUpperCase()) {
+                    case "VERANO" -> ver++;
+                    case "PRIMAVERA" -> pri++;
+                    case "INVIERNO" -> inv++;
+                }
+            }
+        }
+        int max = Math.max(ver, Math.max(pri, inv));
+        if (max == 0) {
+            return List.of("VERANO", "PRIMAVERA", "INVIERNO");
+        }
+        if (ver >= pri && ver >= inv) {
+            return List.of("VERANO", "PRIMAVERA", "INVIERNO");
+        }
+        if (inv >= ver && inv >= pri) {
+            return List.of("INVIERNO", "VERANO", "PRIMAVERA");
+        }
+        return List.of("PRIMAVERA", "INVIERNO", "VERANO");
+    }
+
+    private String iconoElementoPorEstacion(String estacion) {
+        if (estacion == null) return RutasArchivos.ICON_ELEMENTO_PASTO_AMARILLO;
+        return switch (estacion.toUpperCase()) {
+            case "PRIMAVERA" -> RutasArchivos.ICON_ELEMENTO_PASTO_VERDE;
+            case "INVIERNO" -> RutasArchivos.ICON_ELEMENTO_LAGO;
+            default -> RutasArchivos.ICON_ELEMENTO_PASTO_AMARILLO;
+        };
+    }
+
     private void iniciarSimulacion() {
         SimulacionConfigDTO base = crearConfig();
+
+        boolean usarPersonalizado = view.esPersonalizadoActivo() && view.getMatrizPersonalizada() != null;
+        char[][] matrizPersonalizada = usarPersonalizado ? view.getMatrizPersonalizada() : null;
+        String[][] elementosPersonalizados = usarPersonalizado ? view.getElementosPersonalizados() : null;
+
+        if (usarPersonalizado) {
+            Platform.runLater(view::mostrarSimulacionPrincipal);
+        }
+
+        List<String> orden = usarPersonalizado
+                ? definirOrdenPersonalizada(elementosPersonalizados)
+                : List.of("VERANO", "PRIMAVERA", "INVIERNO");
 
         Thread hilo = new Thread(() -> {
             List<ReporteFinal> resultados = new ArrayList<>();
             List<EscenarioSnapshot> snapshots = new ArrayList<>();
 
-            ejecutarEscenario("VERANO", base.getMaxTurnos(),
-                    RutasArchivos.ICON_ELEMENTO_PASTO_AMARILLO, resultados, snapshots);
-            ejecutarEscenario("PRIMAVERA", base.getMaxTurnos(),
-                    RutasArchivos.ICON_ELEMENTO_PASTO_VERDE, resultados, snapshots);
-            ejecutarEscenario("INVIERNO", base.getMaxTurnos(),
-                    RutasArchivos.ICON_ELEMENTO_LAGO, resultados, snapshots);
+            for (String estacion : orden) {
+                String iconoElemento = iconoElementoPorEstacion(estacion);
+                ejecutarEscenario(estacion, base.getMaxTurnos(),
+                        iconoElemento, resultados, snapshots, matrizPersonalizada);
+            }
 
             Platform.runLater(() -> mostrarGaleria(snapshots, resultados));
         });
@@ -159,10 +209,14 @@ public class SimulacionController {
 
     private void ejecutarEscenario(String nombre, int turnos, String elemento,
                                    List<ReporteFinal> resultados,
-                                   List<EscenarioSnapshot> snapshots) {
+                                   List<EscenarioSnapshot> snapshots,
+                                   char[][] matrizPersonalizada) {
         SimulacionConfigDTO cfg = crearConfig();
         cfg.setEscenario(nombre);
         cfg.setMaxTurnos(turnos);
+        if (matrizPersonalizada != null) {
+            cfg.setMatrizPersonalizada(clonar(matrizPersonalizada));
+        }
         // Fijar fondo sin mezclar ni reiniciar especies
         java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
         Platform.runLater(() -> {

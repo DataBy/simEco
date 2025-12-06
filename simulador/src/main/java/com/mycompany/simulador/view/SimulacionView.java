@@ -20,7 +20,10 @@ import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -74,8 +77,21 @@ public class SimulacionView {
             new ImageView[Constantes.MATRIZ_FILAS][Constantes.MATRIZ_COLUMNAS];
     private final StackPane[][] cellWrappers =
             new StackPane[Constantes.MATRIZ_FILAS][Constantes.MATRIZ_COLUMNAS];
+    private StackPane panelCentro;
+    private GridPane gridSimulacion;
+    private GridPane gridPersonalizado;
+    private final ImageView[][] celdasPersonalizadas =
+            new ImageView[Constantes.MATRIZ_FILAS][Constantes.MATRIZ_COLUMNAS];
+    private final StackPane[][] wrappersPersonalizados =
+            new StackPane[Constantes.MATRIZ_FILAS][Constantes.MATRIZ_COLUMNAS];
+    private final Label[][] plusPersonalizados =
+            new Label[Constantes.MATRIZ_FILAS][Constantes.MATRIZ_COLUMNAS];
+    private char[][] matrizPersonalizada = matrizVacia();
+    private String[][] elementosPersonalizados = new String[Constantes.MATRIZ_FILAS][Constantes.MATRIZ_COLUMNAS];
+    private String[][] iconosPersonalizados = new String[Constantes.MATRIZ_FILAS][Constantes.MATRIZ_COLUMNAS];
+    private boolean modoPersonalizado = false;
 
-    // Tamaño dinámico de cada celda del grid
+    // TamaÃ±o dinÃ¡mico de cada celda del grid
     private final DoubleProperty cellSize =
             new SimpleDoubleProperty(Constantes.MATRIZ_TAM_CELDA);
     private final String[][] iconCache =
@@ -260,14 +276,14 @@ public class SimulacionView {
         // ======================================================
         // PANEL CENTRAL: MATRIZ RESPONSIVE (SIN FONDO CAFÉ)
         // ======================================================
-        StackPane panelCentro = new StackPane();
+        panelCentro = new StackPane();
         panelCentro.setPadding(new Insets(10));
         panelCentro.setStyle("-fx-background-color: transparent;");
 
-        GridPane grid = new GridPane();
-        grid.setHgap(2);
-        grid.setVgap(2);
-        grid.setAlignment(Pos.CENTER);
+        gridSimulacion = new GridPane();
+        gridSimulacion.setHgap(2);
+        gridSimulacion.setVgap(2);
+        gridSimulacion.setAlignment(Pos.CENTER);
 
         // Celdas de la matriz
         for (int i = 0; i < Constantes.MATRIZ_FILAS; i++) {
@@ -285,21 +301,25 @@ public class SimulacionView {
 
                 cellWrappers[i][j] = wrapper;
                 matrizCeldas[i][j] = iv;
-                grid.add(wrapper, j, i);
+                gridSimulacion.add(wrapper, j, i);
             }
         }
 
-        panelCentro.getChildren().add(grid);
+        construirEditorPersonalizado();
+
+        panelCentro.getChildren().addAll(gridSimulacion, gridPersonalizado);
+        gridPersonalizado.setVisible(false);
+        gridSimulacion.setVisible(true);
 
         // Recalcular tamaño de celda cuando cambie el tamaño disponible
         panelCentro.widthProperty().addListener((obs, oldV, newV) ->
-                ajustarTamanoCeldas(panelCentro, grid));
+                ajustarTamanoCeldas(panelCentro, gridSimulacion));
         panelCentro.heightProperty().addListener((obs, oldV, newV) ->
-                ajustarTamanoCeldas(panelCentro, grid));
+                ajustarTamanoCeldas(panelCentro, gridSimulacion));
 
         // Llamada inicial
         panelCentro.layoutBoundsProperty().addListener((obs, oldB, newB) ->
-                ajustarTamanoCeldas(panelCentro, grid));
+                ajustarTamanoCeldas(panelCentro, gridSimulacion));
 
         // ======================================================
         // ARMADO FINAL BORDERPANE
@@ -522,7 +542,240 @@ public class SimulacionView {
         cellSize.set(size);
     }
 
+        // ----------------------------------------------------------
+    // Editor de escenario personalizado
     // ----------------------------------------------------------
+    private void construirEditorPersonalizado() {
+        gridPersonalizado = new GridPane();
+        gridPersonalizado.setHgap(2);
+        gridPersonalizado.setVgap(2);
+        gridPersonalizado.setAlignment(Pos.CENTER);
+
+        for (int i = 0; i < Constantes.MATRIZ_FILAS; i++) {
+            for (int j = 0; j < Constantes.MATRIZ_COLUMNAS; j++) {
+                ImageView iv = new ImageView();
+                iv.setPreserveRatio(false);
+                iv.setSmooth(true);
+                iv.fitWidthProperty().bind(cellSize);
+                iv.fitHeightProperty().bind(cellSize);
+
+                Label plus = new Label("+");
+                plus.setStyle("-fx-text-fill: #6d6d6d; -fx-font-size: 22px; -fx-font-weight: bold;");
+
+                StackPane wrapper = new StackPane(iv, plus);
+                wrapper.setStyle(estiloCeldaPersonalizada());
+                int fi = i;
+                int fj = j;
+                wrapper.setOnMouseClicked(ev -> {
+                    ContextMenu menu = crearMenuPersonalizado(fi, fj);
+                    menu.show(wrapper, ev.getScreenX(), ev.getScreenY());
+                });
+
+                wrappersPersonalizados[i][j] = wrapper;
+                celdasPersonalizadas[i][j] = iv;
+                plusPersonalizados[i][j] = plus;
+                matrizPersonalizada[i][j] = 'E';
+                elementosPersonalizados[i][j] = null;
+                iconosPersonalizados[i][j] = null;
+                gridPersonalizado.add(wrapper, fj, fi);
+            }
+        }
+    }
+
+    public void mostrarEditorPersonalizado() {
+        modoPersonalizado = true;
+        gridPersonalizado.setVisible(true);
+        gridSimulacion.setVisible(false);
+    }
+
+    public void mostrarSimulacionPrincipal() {
+        modoPersonalizado = false;
+        gridPersonalizado.setVisible(false);
+        gridSimulacion.setVisible(true);
+    }
+
+    public boolean esPersonalizadoActivo() {
+        return modoPersonalizado;
+    }
+
+    public char[][] getMatrizPersonalizada() {
+        if (!modoPersonalizado) return null;
+        return clonar(matrizPersonalizada);
+    }
+
+    public String[][] getElementosPersonalizados() {
+        if (!modoPersonalizado) return null;
+        return clonarElementos(elementosPersonalizados);
+    }
+
+    private ContextMenu crearMenuPersonalizado(int fila, int col) {
+        ContextMenu menu = new ContextMenu();
+        MenuItem verano = new MenuItem("Elemento Verano");
+        verano.setOnAction(e -> asignarElementoPersonalizado(fila, col, "VERANO", RutasArchivos.ICON_ELEMENTO_PASTO_AMARILLO));
+        MenuItem primavera = new MenuItem("Elemento Primavera");
+        primavera.setOnAction(e -> asignarElementoPersonalizado(fila, col, "PRIMAVERA", RutasArchivos.ICON_ELEMENTO_PASTO_VERDE));
+        MenuItem invierno = new MenuItem("Elemento Invierno");
+        invierno.setOnAction(e -> asignarElementoPersonalizado(fila, col, "INVIERNO", RutasArchivos.ICON_ELEMENTO_LAGO));
+
+        MenuItem presa = new MenuItem("Presa");
+        presa.setOnAction(e -> asignarEspeciePersonalizada(fila, col, 'P'));
+        MenuItem depredador = new MenuItem("Depredador");
+        depredador.setOnAction(e -> asignarEspeciePersonalizada(fila, col, 'D'));
+        MenuItem tercera = new MenuItem("Tercera Especie");
+        tercera.setOnAction(e -> asignarTerceraPersonalizada(fila, col));
+        MenuItem mutacion = new MenuItem("Mutación");
+        mutacion.setOnAction(e -> asignarMutacionPersonalizada(fila, col));
+
+        MenuItem limpiar = new MenuItem("Vaciar");
+        limpiar.setOnAction(e -> vaciarCeldaPersonalizada(fila, col));
+
+        menu.getItems().addAll(verano, primavera, invierno, new SeparatorMenuItem(),
+                presa, depredador, tercera, mutacion, new SeparatorMenuItem(), limpiar);
+        return menu;
+    }
+
+    private void asignarElementoPersonalizado(int fila, int col, String estacion, String icono) {
+        removerMutacion(fila, col);
+        removerTerceraMarca(fila, col);
+        matrizPersonalizada[fila][col] = 'E';
+        elementosPersonalizados[fila][col] = estacion;
+        iconosPersonalizados[fila][col] = icono;
+        refrescarCeldaPersonalizada(fila, col);
+    }
+
+    private void asignarEspeciePersonalizada(int fila, int col, char tipo) {
+        removerMutacion(fila, col);
+        if (tipo != 'T') {
+            removerTerceraMarca(fila, col);
+        }
+        matrizPersonalizada[fila][col] = tipo;
+        String icono;
+        if (tipo == 'P') {
+            icono = elegirIcono(iconosPresas, RutasArchivos.ICON_PRESA);
+        } else if (tipo == 'D') {
+            icono = elegirIcono(iconosDepredadores, RutasArchivos.ICON_DEPREDADOR);
+        } else {
+            icono = null;
+        }
+        iconosPersonalizados[fila][col] = icono;
+        refrescarCeldaPersonalizada(fila, col);
+    }
+
+    private void asignarTerceraPersonalizada(int fila, int col) {
+        removerMutacion(fila, col);
+        String key = fila + "-" + col;
+        String icono;
+        if (siguienteBufalo) {
+            tercerasBufalo.add(key);
+            icono = RutasArchivos.ICON_TERCERA_ESPECIE_BUFALO;
+        } else {
+            tercerasBufalo.remove(key);
+            icono = RutasArchivos.ICON_TERCERA_ESPECIE;
+        }
+        siguienteBufalo = !siguienteBufalo;
+        matrizPersonalizada[fila][col] = 'T';
+        iconosPersonalizados[fila][col] = icono;
+        elementosPersonalizados[fila][col] = null;
+        refrescarCeldaPersonalizada(fila, col);
+    }
+
+    private void asignarMutacionPersonalizada(int fila, int col) {
+        removerTerceraMarca(fila, col);
+        removerMutacion(fila, col);
+        matrizPersonalizada[fila][col] = 'M';
+        iconosPersonalizados[fila][col] = RutasArchivos.ICON_MUTACION;
+        elementosPersonalizados[fila][col] = null;
+        mutaciones.add(new int[]{fila, col});
+        refrescarCeldaPersonalizada(fila, col);
+    }
+
+    private void vaciarCeldaPersonalizada(int fila, int col) {
+        char previo = matrizPersonalizada[fila][col];
+        if (previo == 'M') {
+            removerMutacion(fila, col);
+        }
+        if (previo == 'T') {
+            removerTerceraMarca(fila, col);
+        }
+        matrizPersonalizada[fila][col] = 'E';
+        elementosPersonalizados[fila][col] = null;
+        iconosPersonalizados[fila][col] = null;
+        refrescarCeldaPersonalizada(fila, col);
+    }
+
+    private void refrescarCeldaPersonalizada(int fila, int col) {
+        ImageView iv = celdasPersonalizadas[fila][col];
+        Label plus = plusPersonalizados[fila][col];
+        String ruta = iconosPersonalizados[fila][col];
+        char simbolo = matrizPersonalizada[fila][col];
+
+        if (simbolo == 'P') {
+            if (ruta == null || ruta.isBlank()) {
+                ruta = elegirIcono(iconosPresas, RutasArchivos.ICON_PRESA);
+            }
+        } else if (simbolo == 'D') {
+            if (ruta == null || ruta.isBlank()) {
+                ruta = elegirIcono(iconosDepredadores, RutasArchivos.ICON_DEPREDADOR);
+            }
+        } else if (simbolo == 'T') {
+            if (ruta == null || ruta.isBlank()) {
+                ruta = iconoTercera(fila, col);
+            }
+        } else if (simbolo == 'M') {
+            ruta = (ruta == null || ruta.isBlank()) ? RutasArchivos.ICON_MUTACION : ruta;
+        } else if (ruta == null && elementosPersonalizados[fila][col] != null) {
+            ruta = switch (elementosPersonalizados[fila][col].toUpperCase()) {
+                case "VERANO" -> RutasArchivos.ICON_ELEMENTO_PASTO_AMARILLO;
+                case "PRIMAVERA" -> RutasArchivos.ICON_ELEMENTO_PASTO_VERDE;
+                case "INVIERNO" -> RutasArchivos.ICON_ELEMENTO_LAGO;
+                default -> null;
+            };
+        }
+
+        if (ruta != null) {
+            iv.setImage(IconosUtils.cargarImagen(ruta));
+        } else {
+            iv.setImage(null);
+        }
+        plus.setVisible(ruta == null);
+    }
+
+    private String estiloCeldaPersonalizada() {
+        return """
+            -fx-background-color: rgba(255,255,255,0.38);
+            -fx-background-radius: 12;
+            -fx-border-radius: 12;
+            -fx-border-color: rgba(255,255,255,0.85);
+            -fx-border-width: 1.4;
+        """;
+    }
+
+    private String[][] clonarElementos(String[][] src) {
+        if (src == null) return null;
+        String[][] copia = new String[Constantes.MATRIZ_FILAS][Constantes.MATRIZ_COLUMNAS];
+        for (int i = 0; i < Constantes.MATRIZ_FILAS; i++) {
+            for (int j = 0; j < Constantes.MATRIZ_COLUMNAS; j++) {
+                copia[i][j] = src[i][j];
+            }
+        }
+        return copia;
+    }
+
+    private void removerMutacion(int fila, int col) {
+        mutaciones.removeIf(m -> m[0] == fila && m[1] == col);
+    }
+
+    private void removerTerceraMarca(int fila, int col) {
+        String key = fila + "-" + col;
+        tercerasBufalo.remove(key);
+    }
+
+    private String iconoTercera(int fila, int col) {
+        String key = fila + "-" + col;
+        boolean esBufalo = tercerasBufalo.contains(key);
+        return esBufalo ? RutasArchivos.ICON_TERCERA_ESPECIE_BUFALO : RutasArchivos.ICON_TERCERA_ESPECIE;
+    }
+// ----------------------------------------------------------
     // Métodos para controlador
     // ----------------------------------------------------------
     public Parent getRoot() { return root; }
@@ -552,6 +805,10 @@ public class SimulacionView {
 
     public void setOnEscenarioAleatorio(Runnable r) {
         btnAleatorio.setOnAction(e -> r.run());
+    }
+
+    public void setOnEscenarioPersonalizado(Runnable r) {
+        btnPersonal.setOnAction(e -> r.run());
     }
 
     public void setOnMutacion(Runnable r) {
@@ -626,7 +883,7 @@ public class SimulacionView {
 
         double duracionSegundos = Math.max(2.5, (Constantes.DELAY_PASO_MS / 1000.0) + 0.4);
 
-        // Preparación: resalte previo para guiar al ojo antes de mover
+        // PreparaciÃ³n: resalte previo para guiar al ojo antes de mover
         if (destino == null) {
             String colorPrep = esDepredador ? "#ff0000" : "#2196f3";
             resaltarTemporal(origen.getFila(), origen.getColumna(), colorPrep, duracionSegundos);
@@ -782,7 +1039,7 @@ public class SimulacionView {
     }
 
     private void moverMutacionesLibres() {
-        // Mutaciones estáticas: no se mueven solas entre ticks
+        // Mutaciones estÃ¡ticas: no se mueven solas entre ticks
     }
 
     private void pintarMatriz(char[][] base) {

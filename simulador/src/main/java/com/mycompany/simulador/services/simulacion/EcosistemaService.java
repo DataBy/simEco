@@ -19,6 +19,10 @@ public class EcosistemaService {
 
     public Ecosistema crearEcosistema(SimulacionConfigDTO config) {
         Ecosistema e = new Ecosistema();
+        if (config.getMatrizPersonalizada() != null) {
+            poblarDesdeMatriz(e, config.getMatrizPersonalizada());
+            return e;
+        }
         poblarEspecies(e, config.getPresasIniciales(), Especie.Tipo.PRESA);
         poblarEspecies(e, config.getDepredadoresIniciales(), Especie.Tipo.DEPREDADOR);
         poblarEspecies(e, config.getTerceraEspecieInicial(), Especie.Tipo.TERCERA_ESPECIE);
@@ -67,6 +71,26 @@ public class EcosistemaService {
             }
         }
         return vivos == 0;
+    }
+
+    private void poblarDesdeMatriz(Ecosistema e, char[][] matriz) {
+        if (matriz == null) return;
+        int filas = Math.min(Constantes.MATRIZ_FILAS, matriz.length);
+        for (int i = 0; i < filas; i++) {
+            int cols = Math.min(Constantes.MATRIZ_COLUMNAS, matriz[i].length);
+            for (int j = 0; j < cols; j++) {
+                char val = matriz[i][j];
+                Especie especie = switch (val) {
+                    case 'P' -> new Presa("Presa");
+                    case 'D' -> new Depredador("Depredador");
+                    case 'T' -> new TerceraEspecie("Tercera");
+                    default -> null;
+                };
+                if (especie != null) {
+                    e.colocarEspecie(especie, i, j);
+                }
+            }
+        }
     }
 
     public char[][] construirMatrizSimbolos(Ecosistema e) {

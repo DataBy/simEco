@@ -7,6 +7,7 @@ public class SimulacionConfigDTO {
     private int depredadoresIniciales;
     private int terceraEspecieInicial;
     private int maxTurnos;
+    private char[][] matrizPersonalizada;
 
     public String getEscenario() { return escenario; }
     public void setEscenario(String escenario) { this.escenario = escenario; }
@@ -22,4 +23,7 @@ public class SimulacionConfigDTO {
 
     public int getMaxTurnos() { return maxTurnos; }
     public void setMaxTurnos(int maxTurnos) { this.maxTurnos = maxTurnos; }
+
+    public char[][] getMatrizPersonalizada() { return matrizPersonalizada; }
+    public void setMatrizPersonalizada(char[][] matrizPersonalizada) { this.matrizPersonalizada = matrizPersonalizada; }
 }

@@ -39,7 +39,7 @@ public class EscenariosGaleriaView {
     }
 
     private void construirUI() {
-        root.setPadding(new Insets(24, 24, 28, 24));
+        root.setPadding(new Insets(16, 16, 18, 16));
         root.setStyle("-fx-background-color: #A1D164;");
 
         btnPrev.setOnAction(e -> mostrarAnterior());
@@ -48,80 +48,80 @@ public class EscenariosGaleriaView {
             if (onSiguiente != null) onSiguiente.run();
         });
 
-        lblTitulo.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #235217;");
-        lblEscenario.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #235217;");
+        lblTitulo.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #235217;");
+        lblEscenario.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #235217;");
 
         estilizarBotonNavegacion(btnPrev);
         estilizarBotonNavegacion(btnNext);
         estilizarBotonPrincipal(btnSiguiente);
 
-        HBox header = new HBox(12, btnPrev, lblEscenario, btnNext);
+        HBox header = new HBox(10, btnPrev, lblEscenario, btnNext);
         header.setAlignment(Pos.CENTER);
 
-        VBox card = new VBox(10, lblTitulo, header, btnSiguiente);
+        VBox card = new VBox(8, lblTitulo, header, btnSiguiente);
         card.setAlignment(Pos.CENTER);
-        card.setMaxWidth(420);
-        card.setPadding(new Insets(14, 18, 16, 18));
+        card.setMaxWidth(340);
+        card.setPadding(new Insets(10, 12, 12, 12));
         card.setStyle("""
             -fx-background-color: rgba(255,255,255,0.25);
-            -fx-background-radius: 18;
-            -fx-border-radius: 18;
+            -fx-background-radius: 14;
+            -fx-border-radius: 14;
             -fx-border-color: rgba(255,255,255,0.55);
-            -fx-border-width: 1.6;
+            -fx-border-width: 1.2;
         """);
         DropShadow shadow = new DropShadow();
         shadow.setColor(Color.rgb(0, 0, 0, 0.16));
-        shadow.setRadius(12);
-        shadow.setOffsetY(2);
+        shadow.setRadius(8);
+        shadow.setOffsetY(1.5);
         card.setEffect(shadow);
 
-        grid.setHgap(2);
-        grid.setVgap(2);
+        grid.setHgap(1.5);
+        grid.setVgap(1.5);
         grid.setAlignment(Pos.TOP_CENTER);
-        grid.setPadding(new Insets(12, 0, 0, 0));
+        grid.setPadding(new Insets(8, 0, 0, 0));
         for (int i = 0; i < Constantes.MATRIZ_FILAS; i++) {
             for (int j = 0; j < Constantes.MATRIZ_COLUMNAS; j++) {
                 ImageView iv = new ImageView(IconosUtils.cargarImagen(RutasArchivos.ICON_CELDA_VACIA));
-                iv.setFitWidth(Constantes.MATRIZ_TAM_CELDA * 0.9);
-                iv.setFitHeight(Constantes.MATRIZ_TAM_CELDA * 0.9);
+                iv.setFitWidth(Constantes.MATRIZ_TAM_CELDA * 0.6);
+                iv.setFitHeight(Constantes.MATRIZ_TAM_CELDA * 0.6);
                 iv.setPreserveRatio(false);
                 celdas[i][j] = iv;
                 grid.add(iv, j, i);
             }
         }
 
-        VBox content = new VBox(10, card, grid);
+        VBox content = new VBox(8, card, grid);
         content.setAlignment(Pos.TOP_CENTER);
         BorderPane.setAlignment(content, Pos.TOP_CENTER);
         root.setCenter(content);
     }
 
     private void estilizarBotonNavegacion(Button b) {
-        b.setPrefSize(40, 40);
+        b.setPrefSize(32, 32);
         b.setStyle("""
             -fx-background-color: rgba(255,255,255,0.35);
-            -fx-background-radius: 12;
-            -fx-border-radius: 12;
+            -fx-background-radius: 10;
+            -fx-border-radius: 10;
             -fx-border-color: rgba(255,255,255,0.8);
             -fx-text-fill: #235217;
-            -fx-font-size: 16px;
+            -fx-font-size: 14px;
             -fx-font-weight: bold;
         """);
     }
 
     private void estilizarBotonPrincipal(Button b) {
         b.setMaxWidth(Double.MAX_VALUE);
-        b.setPrefWidth(220);
+        b.setPrefWidth(180);
         b.setStyle("""
             -fx-background-color: rgba(255,255,255,0.55);
-            -fx-background-radius: 16;
-            -fx-border-radius: 16;
+            -fx-background-radius: 12;
+            -fx-border-radius: 12;
             -fx-border-color: rgba(255,255,255,0.9);
-            -fx-border-width: 1.8;
+            -fx-border-width: 1.4;
             -fx-text-fill: #235217;
-            -fx-font-size: 16px;
+            -fx-font-size: 14px;
             -fx-font-weight: bold;
-            -fx-padding: 8 14 8 14;
+            -fx-padding: 6 12 6 12;
         """);
     }
 
