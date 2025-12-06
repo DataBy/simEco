@@ -1,0 +1,244 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 2844 >>
+stream
+BT
+/F1 12 Tf
+12 TL
+50 750 Td
+(REPORTE DE SIMULACIONES) Tj
+T*
+() Tj
+T*
+(Simulacion 1 - VERANO) Tj
+T*
+(Turnos ejecutados: 2) Tj
+T*
+(Presas finales: 28) Tj
+T*
+(Depredadores finales: 27) Tj
+T*
+(Tercera especie final: 5) Tj
+T*
+(Turno de extincion: N/A) Tj
+T*
+(Ocupacion final: 60,0%) Tj
+T*
+() Tj
+T*
+(  Turno 1 - Presas=29, Depredadores=26, Tercera=5, Ocupadas=60) Tj
+T*
+(    TDDP....DP) Tj
+T*
+(    ...P....PD) Tj
+T*
+(    TPDD...PP.) Tj
+T*
+(    PPD..DD...) Tj
+T*
+(    ..PPPPD.P.) Tj
+T*
+(    P..PPDDP.P) Tj
+T*
+(    .PD.DD..PP) Tj
+T*
+(    DTDPTDPPD.) Tj
+T*
+(    DP.DD...PD) Tj
+T*
+(    DP....DPTD) Tj
+T*
+() Tj
+T*
+(  Turno 2 - Presas=28, Depredadores=27, Tercera=5, Ocupadas=60) Tj
+T*
+(    TDDP....DP) Tj
+T*
+(    ...P....PD) Tj
+T*
+(    TPDD...PP.) Tj
+T*
+(    PPD..DD...) Tj
+T*
+(    ..PPPDD.P.) Tj
+T*
+(    P..PPDDP.P) Tj
+T*
+(    .PD.DD..PP) Tj
+T*
+(    DTDPTDPPD.) Tj
+T*
+(    DP.DD..PPD) Tj
+T*
+(    DP....D.TD) Tj
+T*
+() Tj
+T*
+(------------------------------------------------------------) Tj
+T*
+() Tj
+T*
+(Simulacion 2 - PRIMAVERA) Tj
+T*
+(Turnos ejecutados: 2) Tj
+T*
+(Presas finales: 28) Tj
+T*
+(Depredadores finales: 28) Tj
+T*
+(Tercera especie final: 5) Tj
+T*
+(Turno de extincion: N/A) Tj
+T*
+(Ocupacion final: 61,0%) Tj
+T*
+() Tj
+T*
+(  Turno 1 - Presas=29, Depredadores=26, Tercera=5, Ocupadas=60) Tj
+T*
+(    .DP.T.P..D) Tj
+T*
+(    DDPPPP.D..) Tj
+T*
+(    DD...P....) Tj
+T*
+(    ..D.DP.PDD) Tj
+T*
+(    ...DPPP.DD) Tj
+T*
+(    .D...DPPDP) Tj
+T*
+(    D..TPDPPD.) Tj
+T*
+(    PPT...PP.P) Tj
+T*
+(    D.PPDD..P.) Tj
+T*
+(    P.TPTD.DPD) Tj
+T*
+() Tj
+T*
+(  Turno 2 - Presas=28, Depredadores=28, Tercera=5, Ocupadas=61) Tj
+T*
+(    .DP.TP...D) Tj
+T*
+(    DDPPPP.D..) Tj
+T*
+(    DD...P....) Tj
+T*
+(    ..D.DP.PDD) Tj
+T*
+(    ...DPPP.DD) Tj
+T*
+(    .D...DPPDP) Tj
+T*
+(    D..TPDPDD.) Tj
+T*
+(    PPT..DPP.P) Tj
+T*
+(    D.PPDD..P.) Tj
+T*
+(    P.TPTD.DPD) Tj
+T*
+() Tj
+T*
+(------------------------------------------------------------) Tj
+T*
+() Tj
+T*
+(Simulacion 3 - INVIERNO) Tj
+T*
+(Turnos ejecutados: 2) Tj
+T*
+(Presas finales: 28) Tj
+T*
+(Depredadores finales: 28) Tj
+T*
+(Tercera especie final: 5) Tj
+T*
+(Turno de extincion: N/A) Tj
+T*
+(Ocupacion final: 61,0%) Tj
+T*
+() Tj
+T*
+(  Turno 1 - Presas=29, Depredadores=26, Tercera=5, Ocupadas=60) Tj
+T*
+(    PD.D.DPP..) Tj
+T*
+(    .P.P...DD.) Tj
+T*
+(    ...PDD.P.D) Tj
+T*
+(    P.P.D.DDTD) Tj
+T*
+(    PP..D.DDPP) Tj
+T*
+(    PPDDP..T..) Tj
+T*
+(    .PDTPPP..P) Tj
+T*
+(    PDD.T.PPD.) Tj
+T*
+(    .PD.D.P.PD) Tj
+T*
+(    ..DT.PPD..) Tj
+T*
+() Tj
+T*
+(  Turno 2 - Presas=28, Depredadores=28, Tercera=5, Ocupadas=61) Tj
+T*
+(    PD.D.DPP..) Tj
+T*
+(    .P.P...DD.) Tj
+T*
+(    ...PDD.P.D) Tj
+T*
+(    P.P.D.DDTD) Tj
+T*
+(    PP..DDDDP.) Tj
+T*
+(    PPDDP..T.P) Tj
+T*
+(    .DDTPPP..P) Tj
+T*
+(    PDD.T.PPD.) Tj
+T*
+(    .PD.D.P.PD) Tj
+T*
+(    ..DT.PPD..) Tj
+T*
+() Tj
+T*
+(------------------------------------------------------------) Tj
+T*
+() Tj
+T*
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000003136 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+3206
+%%EOF

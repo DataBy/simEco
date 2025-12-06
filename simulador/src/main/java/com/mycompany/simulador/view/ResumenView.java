@@ -12,9 +12,12 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.image.ImageView;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.paint.Color;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -25,7 +28,7 @@ import javafx.scene.layout.VBox;
 public class ResumenView {
 
     private final StackPane root = new StackPane();
-    private final VBox content = new VBox(26);
+    private final VBox content = new VBox(18);
 
     private final Spinner<Integer> spTotalTurnos = new Spinner<>();
     private final TextField txtTurnoExtincion = new TextField();
@@ -34,10 +37,13 @@ public class ResumenView {
     private final VBox panelComparativo = new VBox();
     private final TitledPane panelDetalleComparativo = new TitledPane();
     private final VBox panelDetalleContenido = new VBox(12);
+    private final TitledPane panelAnalisisFinal = new TitledPane();
+    private final TextArea txtAnalisisFinal = new TextArea();
     private final Button btnInicio = new Button();
     private final Button btnEnvioReporte = new Button();
     private final Button btnEnviarCorreo = new Button();
     private static final double PANEL_GRAF_WIDTH = 260;
+    private final Label tituloPrincipal = new Label("Resumen General");
 
     public ResumenView() {
         construirLayout();
@@ -47,16 +53,16 @@ public class ResumenView {
         ImageView bg = IconosUtils.crearImageViewFondo(RutasArchivos.RESUMEN_BACKGROUND, root);
 
         spTotalTurnos.setEditable(false);
-        spTotalTurnos.setPrefWidth(140);
+        spTotalTurnos.setPrefWidth(110);
         spTotalTurnos.setStyle("-fx-opacity: 1; -fx-background-color: rgba(255,255,255,0.85);");
         spTotalTurnos.setFocusTraversable(false);
         spTotalTurnos.setMouseTransparent(true);
         txtTurnoExtincion.setEditable(false);
-        txtTurnoExtincion.setPrefWidth(180);
+        txtTurnoExtincion.setPrefWidth(140);
         txtTurnoExtincion.setStyle("-fx-opacity: 1; -fx-background-color: rgba(255,255,255,0.85);");
 
         content.setAlignment(Pos.TOP_CENTER);
-        content.setPadding(new Insets(90, 22, 48, 22));
+        content.setPadding(new Insets(50, 18, 48, 18));
         content.setMaxWidth(1100);
         content.setMinWidth(820);
         content.setBackground(Background.EMPTY);
@@ -67,24 +73,18 @@ public class ResumenView {
         HBox acciones = new HBox(18, btnInicio, btnEnvioReporte, btnEnviarCorreo);
         acciones.setAlignment(Pos.CENTER);
 
-        HBox top = new HBox(18);
-        top.setAlignment(Pos.CENTER_LEFT);
-        top.setPadding(new Insets(0, 0, 0, 260)); // desplaza a la derecha para no chocar con el título de fondo
-        top.getChildren().addAll(
-                new Label("Total de turnos ejecutados:"), spTotalTurnos,
-                new Label("Turno de extincion:"), txtTurnoExtincion
-        );
-
         configurarPanelGrafico(panelGraficoPoblaciones);
         configurarPanelGrafico(panelGraficoOcupacion);
 
         VBox grafPoblacionesBox = wrapGrafico("Poblaciones finales", panelGraficoPoblaciones, crearLeyendaPoblaciones());
         VBox grafOcupacionBox = wrapGrafico("Ocupacion del tablero", panelGraficoOcupacion, crearLeyendaOcupacion());
+        VBox infoCard = construirInfoCard();
 
-        HBox center = new HBox(40, grafPoblacionesBox, grafOcupacionBox);
+        HBox center = new HBox(18, grafPoblacionesBox, grafOcupacionBox, infoCard);
         center.setAlignment(Pos.CENTER);
         HBox.setHgrow(grafPoblacionesBox, Priority.ALWAYS);
         HBox.setHgrow(grafOcupacionBox, Priority.ALWAYS);
+        HBox.setHgrow(infoCard, Priority.SOMETIMES);
 
         panelDetalleContenido.setSpacing(10);
         panelDetalleContenido.setPadding(new Insets(12, 10, 12, 10));
@@ -112,10 +112,33 @@ public class ResumenView {
         panelDetalleComparativo.setCollapsible(false);
         panelDetalleComparativo.setAnimated(false);
         panelDetalleComparativo.setContent(contenidoComparativo);
-        panelDetalleComparativo.setMaxWidth(980);
-        panelDetalleComparativo.setPrefWidth(980);
-        panelDetalleComparativo.setMinWidth(980);
+        panelDetalleComparativo.setMaxWidth(Double.MAX_VALUE);
+        panelDetalleComparativo.setPrefWidth(Double.MAX_VALUE);
+        panelDetalleComparativo.setMinWidth(0);
         panelDetalleComparativo.setMaxHeight(Double.MAX_VALUE);
+
+        VBox contAnalisis = new VBox(txtAnalisisFinal);
+        contAnalisis.setPadding(new Insets(8, 6, 8, 6));
+        contAnalisis.setStyle("-fx-background-color: rgba(255,255,255,0.94); -fx-background-radius: 10;");
+        contAnalisis.setFillWidth(true);
+
+        txtAnalisisFinal.setEditable(false);
+        txtAnalisisFinal.setWrapText(true);
+        txtAnalisisFinal.setPrefRowCount(10);
+        txtAnalisisFinal.setStyle("""
+            -fx-background-color: rgba(255,255,255,0.94);
+            -fx-border-color: #d9d9d9;
+            -fx-border-radius: 10;
+            -fx-background-radius: 10;
+            -fx-padding: 10;
+        """);
+        panelAnalisisFinal.setText("Analisis final respondido");
+        panelAnalisisFinal.setCollapsible(false);
+        panelAnalisisFinal.setAnimated(false);
+        panelAnalisisFinal.setContent(contAnalisis);
+        panelAnalisisFinal.setMaxWidth(Double.MAX_VALUE);
+        panelAnalisisFinal.setPrefWidth(Double.MAX_VALUE);
+        panelAnalisisFinal.setMinWidth(0);
 
         panelComparativo.setSpacing(8);
         panelComparativo.setPadding(new Insets(12, 12, 12, 12));
@@ -125,19 +148,60 @@ public class ResumenView {
             -fx-background-radius: 12;
         """);
         panelComparativo.setFillWidth(true);
-        panelComparativo.setPrefWidth(980);
-        panelComparativo.setMinWidth(980);
-        panelComparativo.setMaxWidth(980);
-        panelComparativo.getChildren().setAll(panelDetalleComparativo);
+        panelComparativo.setPrefWidth(Double.MAX_VALUE);
+        panelComparativo.setMinWidth(0);
+        panelComparativo.setMaxWidth(Double.MAX_VALUE);
+        panelComparativo.getChildren().setAll(panelDetalleComparativo, panelAnalisisFinal);
 
-        content.getChildren().setAll(top, center, panelComparativo, acciones);
-        VBox.setMargin(top, new Insets(24, 0, 14, 0));
-        VBox.setMargin(center, new Insets(22, 0, 0, 0));
-        VBox.setMargin(panelComparativo, new Insets(16, 0, 0, 0));
-        VBox.setMargin(acciones, new Insets(16, 0, 0, 0));
+        panelDetalleComparativo.prefWidthProperty().bind(panelComparativo.widthProperty());
+        panelAnalisisFinal.prefWidthProperty().bind(panelComparativo.widthProperty());
+
+        tituloPrincipal.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #3b2a18;");
+
+        content.getChildren().setAll(tituloPrincipal, center, panelComparativo, acciones);
+        VBox.setMargin(tituloPrincipal, new Insets(4, 0, 0, 0));
+        VBox.setMargin(center, new Insets(10, 0, 0, 0));
+        VBox.setMargin(panelComparativo, new Insets(8, 0, 0, 0));
+        VBox.setMargin(acciones, new Insets(10, 0, 0, 0));
 
         StackPane.setAlignment(content, Pos.TOP_CENTER);
         root.getChildren().addAll(bg, content);
+    }
+
+    private VBox construirInfoCard() {
+        Label titulo = new Label("Resumen rapido");
+        titulo.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #3b2a18;");
+
+        Label lblTurnos = new Label("\u23f3 Total de turnos:");
+        lblTurnos.setStyle("-fx-font-weight: bold; -fx-text-fill: #3b2a18;");
+        lblTurnos.setWrapText(true);
+        lblTurnos.setMaxWidth(130);
+        HBox filaTurnos = new HBox(8, lblTurnos, spTotalTurnos);
+        filaTurnos.setAlignment(Pos.CENTER_LEFT);
+
+        Label lblExt = new Label("\u2620 Turno de extincion:");
+        lblExt.setStyle("-fx-font-weight: bold; -fx-text-fill: #3b2a18;");
+        lblExt.setWrapText(true);
+        lblExt.setMaxWidth(130);
+        HBox filaExt = new HBox(8, lblExt, txtTurnoExtincion);
+        filaExt.setAlignment(Pos.CENTER_LEFT);
+
+        VBox info = new VBox(12, titulo, filaTurnos, filaExt);
+        info.setAlignment(Pos.TOP_LEFT);
+        info.setPadding(new Insets(14));
+        info.setStyle("""
+            -fx-background-color: linear-gradient(to bottom right,
+                rgba(255,255,255,0.28),
+                rgba(255,255,255,0.18));
+            -fx-background-radius: 18;
+            -fx-border-color: rgba(255,255,255,0.7);
+            -fx-border-width: 1.5;
+            -fx-border-radius: 18;
+        """);
+        info.setEffect(new DropShadow(14, Color.rgb(0, 0, 0, 0.18)));
+        info.setMaxWidth(290);
+        info.setMinWidth(240);
+        return info;
     }
 
     public Parent getRoot() {
@@ -166,6 +230,11 @@ public class ResumenView {
             ReporteFinal r = reportes.get(i);
             panelDetalleContenido.getChildren().add(crearDetalleEstacion(formatearEscenario(r.getEscenario(), i + 1), r));
         }
+    }
+
+    public void actualizarAnalisisFinal(String texto) {
+        if (texto == null) texto = "Sin datos para analizar.";
+        txtAnalisisFinal.setText(texto.trim());
     }
 
     private void configurarPanelGrafico(VBox panel) {
@@ -243,7 +312,7 @@ public class ResumenView {
     private HBox crearLeyendaOcupacion() {
         HBox box = new HBox(12,
                 crearLeyendaItem("Ocupadas", "#d9534f"),
-                crearLeyendaItem("Vacías", "#e6a63d")
+                crearLeyendaItem("Vac\u00edas", "#e6a63d")
         );
         box.setAlignment(Pos.CENTER);
         return box;
@@ -272,4 +341,3 @@ public class ResumenView {
         btnEnviarCorreo.setOnAction(e -> r.run());
     }
 }
-
