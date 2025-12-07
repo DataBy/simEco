@@ -1,4 +1,7 @@
 //mvn clean javafx:run 
+// gocodeia@gmail.com
+// admin@POO
+// hnhh zqqw pkog ysgd
 
 
 package com.mycompany.simulador.main;
