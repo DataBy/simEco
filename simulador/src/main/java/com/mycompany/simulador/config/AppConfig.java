@@ -15,18 +15,29 @@ public final class AppConfig {
     public static final Path ARCHIVO_ESTADO_TURNOS = BASE_DATA.resolve("estado_turnos.txt");
     public static final Path ARCHIVO_LOG           = BASE_DATA.resolve("simulador.log");
 
-    // ✔ Respeta tu config de correo, nada se toca
-    public static final String SMTP_HOST       = "smtp.tu-proveedor.com";
-    public static final int    SMTP_PORT       = 587;
-    public static final String SMTP_USUARIO    = "correo_emisor@ejemplo.com";
-    public static final String SMTP_CONTRASENA = "CAMBIA_ESTA_CONTRASENA";
-    public static final boolean SMTP_TLS       = true;
+    // ===========================================
+    //       CONFIGURACIÓN SMTP PARA GMAIL ✔
+    // ===========================================
+    // Gmail siempre usa este host
+    public static final String SMTP_HOST = "smtp.gmail.com";
+
+    // Gmail usa el puerto 587 con STARTTLS
+    public static final int SMTP_PORT = 587;
+
+    // Tu correo remitente Gmail
+    public static final String SMTP_USUARIO = "gocodeia@gmail.com";
+
+    // App Password de Gmail (PONLA AQUÍ SIN ESPACIOS)
+    // Ejemplo: "hnhhzqqwpkogysgd"
+    public static final String SMTP_CONTRASENA = "hnhhzqqwpkogysgd";
+
+    // Gmail requiere TLS
+    public static final boolean SMTP_TLS = true;
 
     public static Path getBaseData() {
         return BASE_DATA;
     }
 
-    // ✔ Añadido, sin modificar nada tuyo
     public static void ensureDataFolder() {
         try {
             if (!Files.exists(BASE_DATA)) {
