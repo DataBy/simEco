@@ -11,6 +11,12 @@ import com.mycompany.simulador.utils.SimLogger;
 
 public class AlimentacionService implements IAlimentacionStrategy {
 
+    private java.util.function.Consumer<String> logCallback;
+
+    public void setLogCallback(java.util.function.Consumer<String> cb) {
+        this.logCallback = cb;
+    }
+
     @Override
     public void procesarAlimentacion(Ecosistema e) {
         for (Celda[] fila : e.getMatriz()) {
@@ -27,7 +33,7 @@ public class AlimentacionService implements IAlimentacionStrategy {
                         if (esp.getTurnosSinComer() >= Constantes.MAX_TURNOS_SIN_COMER_DEPREDADOR) {
                             esp.setViva(false);
                             c.setEspecie(null); // celda queda vacía
-                            SimLogger.log("Depredador muere por hambre en " + formatear(c));
+                            log("Depredador muere por hambre en " + formatear(c));
                             continue;
                         }
                     }
@@ -43,5 +49,12 @@ public class AlimentacionService implements IAlimentacionStrategy {
 
     private String describir(Especie esp) {
         return (esp instanceof TerceraEspecie) ? "Tercera especie" : "Depredador";
+    }
+
+    private void log(String msg) {
+        SimLogger.log(msg);
+        if (logCallback != null) {
+            logCallback.accept(msg);
+        }
     }
 }

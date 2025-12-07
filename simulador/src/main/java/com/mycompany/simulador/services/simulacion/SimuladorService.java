@@ -38,9 +38,6 @@ public class SimuladorService implements ISimulador {
                                            SimulacionListener listener) {
 
         AppConfig.ensureDataFolder();
-        SimLogger.log("Iniciando simulacion. Escenario: " + config.getEscenario()
-                + ", turnos maximos: " + config.getMaxTurnos());
-
         ecosistemaRepository.guardarConfiguracion(config);
 
         Ecosistema e = ecosistemaService.crearEcosistema(config);
@@ -49,6 +46,10 @@ public class SimuladorService implements ISimulador {
         int turnoExtincion = -1;
         java.util.List<TurnoEvento> eventosTurno = new java.util.ArrayList<>();
         int turnosEjecutados = 0;
+
+        if (alimentacionStrategy instanceof AlimentacionService ali) {
+            ali.setLogCallback(this::logEvent);
+        }
 
         for (int turno = 1; turno <= config.getMaxTurnos(); turno++) {
             turnosEjecutados = turno;
@@ -67,12 +68,9 @@ public class SimuladorService implements ISimulador {
                 repro.setEventoCallback(eventosTurno::add);
             }
             movimientosStrategy.setEventoCallback(eventosTurno::add);
-            SimLogger.log("Turno " + turno + " - movimiento");
             movimientosStrategy.moverEspecies(e);
 
-            SimLogger.log("Turno " + turno + " - alimentacion");
             alimentacionStrategy.procesarAlimentacion(e);
-            SimLogger.log("Turno " + turno + " - reproduccion");
             reproduccionStrategy.reproducir(e);
             geneticaService.aplicarMutaciones(e);
             incrementarSobrevivencia(vivosInicio);
@@ -94,19 +92,11 @@ public class SimuladorService implements ISimulador {
             }
             eventosTurno.clear();
 
-            SimLogger.log("Resumen turno " + turno + ": Presas=" + t.getPresas()
-                    + ", Depredadores=" + t.getDepredadores()
-                    + ", Tercera especie=" + t.getTerceraEspecie()
-                    + ", Ocupadas=" + t.getCeldasOcupadas());
-            SimLogger.logMatriz(matrizSimbolos);
-            SimLogger.log("Estado del turno guardado en " + AppConfig.ARCHIVO_ESTADO_TURNOS);
-
             if ((t.getPresas() == 0 || t.getDepredadores() == 0) && turnoExtincion == -1) {
                 turnoExtincion = turno;
             }
 
             if (ecosistemaService.estaExtinto(e)) {
-                SimLogger.log("Extincion alcanzada en el turno " + turno);
                 break;
             }
 
@@ -124,9 +114,6 @@ public class SimuladorService implements ISimulador {
         int totalCeldas = Constantes.MATRIZ_FILAS * Constantes.MATRIZ_COLUMNAS;
         reporteFinal.setPorcentajeOcupacionFinal(
                 totalCeldas == 0 ? 0 : (ultimo.getCeldasOcupadas() * 100.0 / totalCeldas));
-        SimLogger.log("Simulacion finalizada. Presas finales=" + ultimo.getPresas()
-                + ", Depredadores finales=" + ultimo.getDepredadores()
-                + ", Tercera especie final=" + ultimo.getTerceraEspecie());
         return reporteFinal;
     }
 

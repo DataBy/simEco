@@ -29,9 +29,6 @@ public class EstadoTurnosRepositoryTXT implements IEstadoTurnosRepository {
                 + ";DEPREDADORES=" + estado.getDepredadores()
                 + ";TERCERA=" + estado.getTerceraEspecie()
                 + ";OCUPADAS=" + estado.getCeldasOcupadas());
-        for (int i = 0; i < matrizSimbolos.length; i++) {
-            lineas.add(new String(matrizSimbolos[i]));
-        }
         lineas.add("----");
         ArchivoUtils.escribirLineas(path, lineas, true);
     }

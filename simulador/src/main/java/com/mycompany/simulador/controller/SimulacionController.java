@@ -39,6 +39,8 @@ public class SimulacionController {
     private final CorreoService correoService = new CorreoService();
     private File ultimoReportePdf;
     private String ultimoAnalisis = "";
+    private final Map<String, List<String>> historialPorEscenario = new LinkedHashMap<>();
+    private final List<String> historialGlobal = new ArrayList<>();
 
     public SimulacionController(Stage stage, String correoUsuario) {
         this.stage = stage;
@@ -149,6 +151,8 @@ public class SimulacionController {
     private void iniciarSimulacion() {
         // Limpiar registros anteriores para no duplicar datos entre simulaciones consecutivas.
         estadoRepo.limpiar();
+        historialPorEscenario.clear();
+        historialGlobal.clear();
 
         SimulacionConfigDTO base = crearConfig();
 
@@ -196,7 +200,12 @@ public class SimulacionController {
         ultimoAnalisis = construirAnalisisComparativo(reportesFinales);
         rView.setOnEnvioReporte(() -> Platform.runLater(() -> {
             try {
-                File pdf = pdfService.generarReporteSimulaciones(reportesFinales, ultimoAnalisis);
+                File pdf = pdfService.generarReporteSimulaciones(
+                        reportesFinales,
+                        ultimoAnalisis,
+                        historialPorEscenario,
+                        historialGlobal
+                );
                 ultimoReportePdf = pdf;
                 DialogoConfirmacion.mostrar("Reporte generado en: " + pdf.getAbsolutePath());
                 abrirArchivo(pdf);
@@ -435,7 +444,13 @@ public class SimulacionController {
                                    List<ReporteFinal> resultados,
                                    List<EscenarioSnapshot> snapshots,
                                    char[][] matrizPersonalizada) {
-        SimuladorService simulador = crearSimulador();
+        List<String> bitacoraEscenario = historialPorEscenario.computeIfAbsent(nombre, k -> new ArrayList<>());
+        SimuladorService simulador = crearSimulador(msg -> {
+            String entrada = "[" + nombre + "] " + msg;
+            bitacoraEscenario.add(msg);
+            historialGlobal.add(entrada);
+            Platform.runLater(() -> view.log(entrada));
+        });
         SimulacionConfigDTO cfg = crearConfig();
         cfg.setEscenario(nombre);
         cfg.setMaxTurnos(turnos);
@@ -486,12 +501,14 @@ public class SimulacionController {
         resultados.add(r);
     }
 
-    private SimuladorService crearSimulador() {
+    private SimuladorService crearSimulador(java.util.function.Consumer<String> logHandler) {
         SimuladorService s = new SimuladorService(
                 new EcossitemaRepositoryTXT(),
                 estadoRepo
         );
-        s.setLogCallback(msg -> Platform.runLater(() -> view.log(msg)));
+        if (logHandler != null) {
+            s.setLogCallback(logHandler);
+        }
         return s;
     }
 

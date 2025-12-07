@@ -47,59 +47,152 @@ public class PdfService implements IReporteService {
      * Incluye resumen por simulacion y el detalle de cada turno con su matriz final.
      */
     public File generarReporteSimulaciones(List<ReporteFinal> reportes) {
-        return generarReporteSimulaciones(reportes, "");
+        return generarReporteSimulaciones(reportes, "", Collections.emptyMap(), Collections.emptyList());
     }
 
     /**
      * Igual que el metodo original pero permitiendo anexar un analisis comparativo al final.
      */
     public File generarReporteSimulaciones(List<ReporteFinal> reportes, String analisisFinal) {
-        if (reportes == null) reportes = Collections.emptyList();
-        File pdf = archivoUnico("reporte_simulaciones");
-        Map<String, List<EstadoTurnoDetalle>> estados = cargarEstadosPorEscenario();
+        return generarReporteSimulaciones(reportes, analisisFinal, Collections.emptyMap(), Collections.emptyList());
+    }
 
+    public File generarReporteSimulaciones(List<ReporteFinal> reportes,
+                                           String analisisFinal,
+                                           Map<String, List<String>> historialPorEscenario,
+                                           List<String> historialGlobal) {
+        if (reportes == null) reportes = Collections.emptyList();
+        if (historialPorEscenario == null) historialPorEscenario = Collections.emptyMap();
+        if (historialGlobal == null) historialGlobal = Collections.emptyList();
+
+        File pdf = archivoUnico("reporte_simulaciones");
         List<String> lineas = new ArrayList<>();
+
         lineas.add("REPORTE DE SIMULACIONES");
+        lineas.add(separadorLargo());
+
+        int totalTurnos = reportes.stream().mapToInt(ReporteFinal::getTotalTurnos).sum();
+        int presasFinales = reportes.stream().mapToInt(ReporteFinal::getPresasFinales).sum();
+        int depredadoresFinales = reportes.stream().mapToInt(ReporteFinal::getDepredadoresFinales).sum();
+        int tercerasFinales = reportes.stream().mapToInt(ReporteFinal::getTerceraEspecieFinal).sum();
+        int turnoExtincion = reportes.stream()
+                .mapToInt(ReporteFinal::getTurnoExtincion)
+                .filter(v -> v >= 0)
+                .min()
+                .orElse(-1);
+        double ocupacionProm = reportes.stream()
+                .mapToDouble(ReporteFinal::getPorcentajeOcupacionFinal)
+                .average()
+                .orElse(0);
+        int totalCeldas = Constantes.MATRIZ_FILAS * Constantes.MATRIZ_COLUMNAS;
+        int ocupadas = (int) Math.round(ocupacionProm * totalCeldas / 100.0);
+        int vacias = Math.max(0, totalCeldas - ocupadas);
+
+        lineas.add("Resumen inicial");
+        lineas.add(separadorCorto());
+        lineas.add("Total de turnos ejecutados (spinner): " + totalTurnos);
+        lineas.add("Turno de extincion (textfield): " + (turnoExtincion < 0 ? "N/A" : turnoExtincion));
         lineas.add("");
+        lineas.addAll(pieAscii("Poblaciones finales (pastel)", "Presas", presasFinales, "Depredadores", depredadoresFinales));
+        lineas.add("Tercera especie final: " + tercerasFinales);
+        lineas.add("");
+        lineas.addAll(pieAscii("Ocupacion del ecosistema (pastel)", "Ocupadas", ocupadas, "Vacias", vacias));
+        lineas.add("");
+
         int index = 1;
         for (ReporteFinal r : reportes) {
             if (r == null) continue;
             String escenario = r.getEscenario() == null ? "--" : r.getEscenario();
             lineas.add("Simulacion " + index + " - " + escenario);
+            lineas.add(separadorCorto());
             lineas.add("Turnos ejecutados: " + r.getTotalTurnos());
             lineas.add("Presas finales: " + r.getPresasFinales());
             lineas.add("Depredadores finales: " + r.getDepredadoresFinales());
             lineas.add("Tercera especie final: " + r.getTerceraEspecieFinal());
             lineas.add("Turno de extincion: " + (r.getTurnoExtincion() < 0 ? "N/A" : r.getTurnoExtincion()));
             lineas.add(String.format("Ocupacion final: %.1f%%", r.getPorcentajeOcupacionFinal()));
-            lineas.add("");
-
-            List<EstadoTurnoDetalle> lista = estados.getOrDefault(escenario, Collections.emptyList());
-            lista.sort(Comparator.comparingInt(d -> d.turno));
-            for (EstadoTurnoDetalle d : lista) {
-                lineas.add("  Turno " + d.turno + " - Presas=" + d.presas + ", Depredadores=" + d.depredadores
-                        + ", Tercera=" + d.tercera + ", Ocupadas=" + d.ocupadas);
-                for (String fila : d.matriz) {
-                    lineas.add("    " + fila);
+            lineas.add("Historial de movimientos / eventos:");
+            List<String> eventos = historialPorEscenario.getOrDefault(escenario, Collections.emptyList());
+            if (eventos.isEmpty()) {
+                lineas.add("  (sin movimientos registrados)");
+            } else {
+                int c = 1;
+                for (String ev : eventos) {
+                    lineas.add("  " + c + ". " + ev);
+                    c++;
                 }
-                lineas.add("");
             }
-            lineas.add("------------------------------------------------------------");
             lineas.add("");
             index++;
         }
 
         if (analisisFinal != null && !analisisFinal.isBlank()) {
-            lineas.add("ANALISIS COMPARATIVO FINAL");
-            lineas.add("---------------------------");
+            lineas.add("Analisis comparativo final");
+            lineas.add(separadorCorto());
             for (String l : analisisFinal.split("\\r?\\n")) {
                 lineas.add(l);
             }
             lineas.add("");
         }
 
+        lineas.add("Historial global de la simulacion");
+        lineas.add(separadorCorto());
+        if (historialGlobal.isEmpty()) {
+            lineas.add("  (sin eventos registrados)");
+        } else {
+            int c = 1;
+            for (String ev : historialGlobal) {
+                lineas.add("  " + c + ". " + ev);
+                c++;
+            }
+        }
+
         generarPdfSimple(pdf.toPath(), lineas);
         return pdf;
+    }
+
+    private List<String> pieAscii(String titulo, String etiquetaA, int valorA, String etiquetaB, int valorB) {
+        int total = Math.max(1, valorA + valorB);
+        double ratioA = valorA * 1.0 / total;
+        int size = 11; // cuadrícula impar para centrar
+        int r = size / 2;
+        List<String> salida = new ArrayList<>();
+        salida.add(titulo);
+        salida.add("  " + etiquetaA + ": " + valorA + " (" + porcentaje(valorA, total) + "%)");
+        salida.add("  " + etiquetaB + ": " + valorB + " (" + porcentaje(valorB, total) + "%)");
+        salida.add("  (Pastel ASCII; # = " + etiquetaA + ", . = " + etiquetaB + ")");
+        for (int y = 0; y < size; y++) {
+            StringBuilder fila = new StringBuilder("   ");
+            for (int x = 0; x < size; x++) {
+                double dx = x - r;
+                double dy = r - y;
+                double dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist > r + 0.1) {
+                    fila.append(' ');
+                } else {
+                    double ang = Math.atan2(dy, dx);
+                    if (ang < 0) ang += Math.PI * 2;
+                    double fraccion = ang / (Math.PI * 2);
+                    boolean esA = fraccion <= ratioA;
+                    fila.append(esA ? '#' : '.');
+                }
+            }
+            salida.add(fila.toString());
+        }
+        return salida;
+    }
+
+    private String porcentaje(int valor, int total) {
+        if (total <= 0) return "0.0";
+        return String.format("%.1f", (valor * 100.0 / total));
+    }
+
+    private String separadorLargo() {
+        return "============================================================";
+    }
+
+    private String separadorCorto() {
+        return "------------------------------------------------------------";
     }
 
     private File archivoUnico(String prefijo) {
