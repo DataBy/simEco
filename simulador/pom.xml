@@ -79,21 +79,37 @@
             <version>2.1.0</version>
         </dependency>
 
-        <!--
-          Nota: no uses scope "provided" aquí, porque tu app JavaFX es de escritorio
-          y necesita llevar estas librerías dentro del classpath/artefacto.
-        -->
+
+        <!-- ===============================
+             JFREECHART (GRÁFICOS)
+           =============================== -->
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.5.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jcommon</artifactId>
+            <version>1.0.24</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>2.0.30</version>
+        </dependency>
 
     </dependencies>
 
+
     <!-- ===============================
-         BUILD (AQUÍ VAN resources)
+         BUILD
        =============================== -->
     <build>
 
-        <!-- Para compilar correctamente JavaFX -->
         <plugins>
-            <!-- Plugin para ejecutar JavaFX con "mvn javafx:run" -->
+
+            <!-- Plugin para ejecutar JavaFX -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
@@ -113,10 +129,12 @@
                     <target>${maven.compiler.target}</target>
                 </configuration>
             </plugin>
+
         </plugins>
 
-        <!-- AQUI SI SE PERMITE resources -->
+        <!-- Recursos -->
         <resources>
+
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
@@ -124,7 +142,7 @@
                 </includes>
             </resource>
 
-            <!-- Soporte para assets en src/main/java -->
+            <!-- Soporte para imágenes dentro de src/main/java -->
             <resource>
                 <directory>src/main/java</directory>
                 <includes>
@@ -132,6 +150,7 @@
                     <include>**/*.jpg</include>
                 </includes>
             </resource>
+
         </resources>
 
     </build>

@@ -334,19 +334,18 @@ public class SimulacionController {
             ReporteFinal r = porEscenario.get(esc);
             if (r == null) continue;
             com.mycompany.simulador.dto.EstadoTurnoDTO p = primerTurno.get(esc);
-            com.mycompany.simulador.dto.EstadoTurnoDTO u = ultimoTurno.get(esc);
             int presasIni = p != null ? p.getPresas() : r.getPresasFinales();
             int depIni = p != null ? p.getDepredadores() : r.getDepredadoresFinales();
             int presasFin = r.getPresasFinales();
             int depFin = r.getDepredadoresFinales();
 
             sb.append(icono(esc)).append(" ").append(esc).append("\n");
-            sb.append(" - Equilibrio: ").append(describirEquilibrio(presasFin, depFin)).append("\n");
-            sb.append(" - Variacion poblacional: presas ").append(delta(presasIni, presasFin))
-                    .append(", depredadores ").append(delta(depIni, depFin)).append("\n");
-            sb.append(" - Extincion de presas: ").append(describirExtincion(presasFin, r.getTurnoExtincion())).append("\n");
-            sb.append(" - Extincion de depredadores: ").append(depFin == 0 ? "si (hambre tras falta de presas)" : "no").append("\n");
-            sb.append(" - Ocupacion final: ").append(String.format("%.1f%%", r.getPorcentajeOcupacionFinal())).append("\n");
+            sb.append("\t• Equilibrio:\t").append(describirEquilibrio(presasFin, depFin)).append("\n");
+            sb.append("\t• Variacion poblacional:\tpresas ").append(delta(presasIni, presasFin))
+                    .append("\t|\tdepredadores ").append(delta(depIni, depFin)).append("\n");
+            sb.append("\t• Extincion:\tpresas ").append(describirExtincion(presasFin, r.getTurnoExtincion()))
+                    .append("\t|\tdepredadores ").append(depFin == 0 ? "si (hambre tras falta de presas)" : "no").append("\n");
+            sb.append("\t• Ocupacion final:\t").append(String.format("%.1f%%", r.getPorcentajeOcupacionFinal())).append("\n\n");
         }
 
         // Analisis global
@@ -355,18 +354,18 @@ public class SimulacionController {
         boolean hayExtincionDep = reportes.stream().anyMatch(r -> r.getDepredadoresFinales() == 0);
         String escenarioEstable = detectarMasEstable(reportes);
 
-        sb.append("\n=== Resumen global ===\n");
-        sb.append("1) Ecosistema equilibrado: ").append(hayEquilibrio(reportes)
+        sb.append("=== Resumen global ===\n");
+        sb.append("1)\tEcosistema equilibrado:\t").append(hayEquilibrio(reportes)
                 ? "se mantiene sin extinciones rapidas" : "tiende a dominancia de una especie").append("\n");
-        sb.append("   Patrones: presas ").append(tendenciaGlobal(reportes, true))
-                .append(", depredadores ").append(tendenciaGlobal(reportes, false)).append("\n");
-        sb.append("2) Depredadores dominantes: ").append(hayExtincionPresas
+        sb.append("\t- Patrones poblacionales:\tpresas ").append(tendenciaGlobal(reportes, true))
+                .append("\t|\tdepredadores ").append(tendenciaGlobal(reportes, false)).append("\n");
+        sb.append("2)\tDepredadores dominantes:\t").append(hayExtincionPresas
                 ? "pueden extinguir presas en pocos turnos" : "no extinguieron presas en esta corrida").append("\n");
-        sb.append("   Depredadores luego: ").append(hayExtincionDep ? "colapsan por hambre si no quedan presas" : "se sostienen").append("\n");
-        sb.append("3) Presas dominantes: ocupacion alta -> ").append(String.format("%.1f%% promedio", ocupProm))
-                .append("; colapso de depredadores: ").append(hayExtincionDep ? "si" : "no observado").append("\n");
-        sb.append("4) Estabilidad: mejor en ").append(escenarioEstable)
-                .append("; factor clave: balance inicial + reglas de reproduccion (presas 2 turnos, depredadores requieren caza)\n");
+        sb.append("\t- Tras agotar presas:\t").append(hayExtincionDep ? "colapsan por hambre" : "se sostienen").append("\n");
+        sb.append("3)\tPresas dominantes:\tocupacion alta ~ ").append(String.format("%.1f%% promedio", ocupProm))
+                .append("\t|\tcolapso de depredadores: ").append(hayExtincionDep ? "si" : "no observado").append("\n");
+        sb.append("4)\tEstabilidad:\tmejor en ").append(escenarioEstable)
+                .append("\t|\tfactor clave: balance inicial + reglas de reproduccion (presas 2 turnos; depredadores requieren caza)\n");
 
         return sb.toString();
     }
@@ -420,12 +419,12 @@ public class SimulacionController {
     }
 
     private String icono(String estacion) {
-        if (estacion == null) return "�";
+        if (estacion == null) return "*";
         return switch (estacion.toUpperCase()) {
-            case "VERANO" -> "☀";
-            case "PRIMAVERA" -> "🌸";
-            case "INVIERNO" -> "❄";
-            default -> "•";
+            case "VERANO" -> "[V]";
+            case "PRIMAVERA" -> "[P]";
+            case "INVIERNO" -> "[I]";
+            default -> "*";
         };
     }
 
@@ -537,3 +536,4 @@ public class SimulacionController {
         return copia;
     }
 }
+
